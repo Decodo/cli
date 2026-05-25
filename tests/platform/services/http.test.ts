@@ -26,7 +26,7 @@ describe('HttpClient', () => {
       integrationHeader: 'cli',
     });
 
-    await client.post('/v2/scrape', { target: 'universal', url: 'https://example.com' });
+    await client.post('/v2/scrape', { target: 'universal', url: 'https://ip.decodo.com' });
 
     expect(fetchMock).toHaveBeenCalledOnce();
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -42,7 +42,7 @@ describe('HttpClient', () => {
     });
     expect(JSON.parse(init.body as string)).toEqual({
       target: 'universal',
-      url: 'https://example.com',
+      url: 'https://ip.decodo.com',
     });
   });
 

@@ -10,7 +10,7 @@ describe('validateAuthToken', () => {
     vi.unstubAllGlobals();
   });
 
-  it('calls universal scrape against example.com', async () => {
+  it('calls universal scrape against ip.decodo.com', async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValue({
       ok: true,
@@ -24,7 +24,7 @@ describe('validateAuthToken', () => {
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(init.body as string)).toEqual({
       target: 'universal',
-      url: 'https://example.com',
+      url: 'https://ip.decodo.com',
     });
     expect(init.headers).toMatchObject({
       Authorization: 'Basic test-token',
