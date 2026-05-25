@@ -4,6 +4,16 @@ import { join } from "node:path";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+async function runWhoami(args: string[]): Promise<void> {
+  const { whoamiCommand } = await import(
+    "../../../src/auth/commands/whoami.js"
+  );
+  const program = new Command()
+    .option("--token <token>", "global token")
+    .addCommand(whoamiCommand);
+  await program.parseAsync(args, { from: "user" });
+}
+
 describe("whoamiCommand", () => {
   let configHome: string;
   let previousConfigHome: string | undefined;
@@ -52,24 +62,33 @@ describe("whoamiCommand", () => {
     );
     await writeConfig({ authToken: "abcdefghijklmnop" });
 
-    const { whoamiCommand } = await import(
-      "../../../src/auth/commands/whoami.js"
-    );
-    const program = new Command().addCommand(whoamiCommand);
-    await program.parseAsync(["whoami"], { from: "user" });
+    await runWhoami(["whoami"]);
 
     expect(stdout).toContain("source: config");
     expect(stdout).toContain("token: abcd...mnop");
   });
 
-  it("exits with code 3 when no token is available", async () => {
-    const { whoamiCommand } = await import(
-      "../../../src/auth/commands/whoami.js"
+  it("prints auth source and masked token from global --token", async () => {
+    await runWhoami(["--token", "abcdefghijklmnop", "whoami"]);
+
+    expect(stdout).toContain("source: flag");
+    expect(stdout).toContain("token: abcd...mnop");
+  });
+
+  it("prefers global --token over saved config", async () => {
+    const { writeConfig } = await import(
+      "../../../src/auth/services/config.js"
     );
-    const program = new Command().addCommand(whoamiCommand);
-    await expect(
-      program.parseAsync(["whoami"], { from: "user" })
-    ).rejects.toThrow("process.exit:3");
+    await writeConfig({ authToken: "config-token-value" });
+
+    await runWhoami(["--token", "flag-token-value", "whoami"]);
+
+    expect(stdout).toContain("source: flag");
+    expect(stdout).toContain("token: flag...alue");
+  });
+
+  it("exits with code 3 when no token is available", async () => {
+    await expect(runWhoami(["whoami"])).rejects.toThrow("process.exit:3");
     expect(exitCode).toBe(3);
   });
 });
