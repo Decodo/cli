@@ -1,15 +1,11 @@
-import { DecodoError } from '../errors/decodo-error.js';
-import { AuthenticationError } from '../errors/authentication-error.js';
-import { RateLimitError } from '../errors/rate-limit-error.js';
-import { ValidationError } from '../errors/validation-error.js';
-import { TimeoutError } from '../errors/timeout-error.js';
-import type { HttpClientConfig } from '../types/http.js';
+import { AuthenticationError } from "../errors/authentication-error.js";
+import { DecodoError } from "../errors/decodo-error.js";
+import { RateLimitError } from "../errors/rate-limit-error.js";
+import { TimeoutError } from "../errors/timeout-error.js";
+import { ValidationError } from "../errors/validation-error.js";
+import type { ErrorResponse, HttpClientConfig } from "../types/http.js";
 
-type ErrorResponse = {
-  status?: string;
-  message?: string;
-  errors?: unknown[];
-};
+const TRAILING_SLASHES = /\/+$/;
 
 export class HttpClient {
   private readonly baseUrl: string;
@@ -18,11 +14,11 @@ export class HttpClient {
   private readonly integrationHeader: string;
 
   constructor(config: HttpClientConfig) {
-    this.baseUrl = config.baseUrl.replace(/\/+$/, '');
+    this.baseUrl = config.baseUrl.replace(TRAILING_SLASHES, "");
     this.timeoutMs = config.timeoutMs;
     this.integrationHeader = config.integrationHeader;
 
-    if (config.auth.type === 'basic') {
+    if (config.auth.type === "basic") {
       this.authHeader = `Basic ${config.auth.token}`;
     } else {
       this.authHeader = config.auth.apiKey;
@@ -39,9 +35,9 @@ export class HttpClient {
         method,
         headers: {
           Authorization: this.authHeader,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'x-integration': this.integrationHeader,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-integration": this.integrationHeader,
         },
         signal: controller.signal,
       };
@@ -66,44 +62,16 @@ export class HttpClient {
         // response body wasn't JSON
       }
 
-      const message = errorBody?.message ?? `HTTP ${res.status}`;
-
-      if (res.status === 401 || res.status === 403) {
-        throw new AuthenticationError(message);
-      }
-      if (res.status === 429) {
-        throw new RateLimitError(message);
-      }
-      if (res.status === 422 || (res.status === 400 && errorBody?.errors)) {
-        throw new ValidationError(message, errorBody?.errors);
-      }
-      throw new DecodoError(message, res.status, errorBody?.status);
+      this.throwForErrorResponse(res, errorBody);
     } catch (err) {
-      if (err instanceof DecodoError) {
-        throw err;
-      }
-      if (
-        err instanceof TypeError &&
-        (err as TypeError & { cause?: { code?: string } }).cause?.code ===
-          'ABORT_ERR'
-      ) {
-        throw new TimeoutError(
-          `Request to ${path} timed out after ${this.timeoutMs}ms`,
-        );
-      }
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new TimeoutError(
-          `Request to ${path} timed out after ${this.timeoutMs}ms`,
-        );
-      }
-      throw err;
+      this.rethrowRequestError(err, path);
     } finally {
       clearTimeout(timer);
     }
   }
 
   post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body);
+    return this.request<T>("POST", path, body);
   }
 
   get<T>(path: string, query?: Record<string, string>): Promise<T> {
@@ -111,9 +79,48 @@ export class HttpClient {
       const params = new URLSearchParams(query);
       const qs = params.toString();
       if (qs) {
-        return this.request<T>('GET', `${path}?${qs}`);
+        return this.request<T>("GET", `${path}?${qs}`);
       }
     }
-    return this.request<T>('GET', path);
+    return this.request<T>("GET", path);
+  }
+
+  private throwForErrorResponse(
+    res: Response,
+    errorBody: ErrorResponse | undefined
+  ): never {
+    const message = errorBody?.message ?? `HTTP ${res.status}`;
+
+    if (res.status === 401 || res.status === 403) {
+      throw new AuthenticationError(message);
+    }
+    if (res.status === 429) {
+      throw new RateLimitError(message);
+    }
+    if (res.status === 422 || (res.status === 400 && errorBody?.errors)) {
+      throw new ValidationError(message, errorBody?.errors);
+    }
+    throw new DecodoError(message, res.status, errorBody?.status);
+  }
+
+  private rethrowRequestError(err: unknown, path: string): never {
+    if (err instanceof DecodoError) {
+      throw err;
+    }
+    if (
+      err instanceof TypeError &&
+      (err as TypeError & { cause?: { code?: string } }).cause?.code ===
+        "ABORT_ERR"
+    ) {
+      throw new TimeoutError(
+        `Request to ${path} timed out after ${this.timeoutMs}ms`
+      );
+    }
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new TimeoutError(
+        `Request to ${path} timed out after ${this.timeoutMs}ms`
+      );
+    }
+    throw err;
   }
 }

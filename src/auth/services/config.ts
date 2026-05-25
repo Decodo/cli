@@ -1,16 +1,16 @@
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
-import { join, dirname } from 'node:path';
-import { xdgConfig } from 'xdg-basedir';
-import type { DecodoConfig } from '../types/config.js';
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+import { xdgConfig } from "xdg-basedir";
+import type { DecodoConfig } from "../types/config.js";
 
-const CONFIG_FILE = 'config.json';
+const CONFIG_FILE = "config.json";
 
 function getConfigDir(): string {
   const base =
-    process.env.XDG_CONFIG_HOME ?? xdgConfig ?? join(homedir(), '.config');
-    
-  return join(base, 'decodo');
+    process.env.XDG_CONFIG_HOME ?? xdgConfig ?? join(homedir(), ".config");
+
+  return join(base, "decodo");
 }
 
 export function getConfigPath(): string {
@@ -20,25 +20,25 @@ export function getConfigPath(): string {
 function parseConfig(raw: string): DecodoConfig | undefined {
   const parsed = JSON.parse(raw) as Partial<DecodoConfig>;
 
-  if (typeof parsed.authToken === 'string' && parsed.authToken.length > 0) {
+  if (typeof parsed.authToken === "string" && parsed.authToken.length > 0) {
     return {
       authToken: parsed.authToken,
     };
   }
 
-  return undefined;
+  return;
 }
 
 export async function readConfig(): Promise<DecodoConfig | undefined> {
   const configPath = getConfigPath();
 
   try {
-    const raw = await readFile(configPath, 'utf8');
+    const raw = await readFile(configPath, "utf8");
 
     return parseConfig(raw);
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      return undefined;
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return;
     }
 
     throw err;
@@ -57,7 +57,7 @@ export async function clearConfig(): Promise<void> {
   try {
     await unlink(getConfigPath());
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
       throw err;
     }
   }

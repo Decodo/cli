@@ -1,3 +1,3 @@
-export type DecodoConfig = {
+export interface DecodoConfig {
   authToken: string;
-};
+}

@@ -1,41 +1,41 @@
-import { AuthRequiredError } from '../errors/auth-required-error.js';
-import { readConfig } from './config.js';
+import { AuthRequiredError } from "../errors/auth-required-error.js";
+import { readConfig } from "./config.js";
 
-export type AuthSource = 'flag' | 'env' | 'config' | 'none';
+export type AuthSource = "flag" | "env" | "config" | "none";
 
-export type ResolvedAuth = {
-  token: string | undefined;
+export interface ResolvedAuth {
   source: AuthSource;
-};
+  token: string | undefined;
+}
 
-export type ResolveAuthOptions = {
+export interface ResolveAuthOptions {
   token?: string;
-};
+}
 
 export async function resolveAuthToken(
-  options: ResolveAuthOptions = {},
+  options: ResolveAuthOptions = {}
 ): Promise<ResolvedAuth> {
   if (options.token) {
-    return { token: options.token, source: 'flag' };
+    return { token: options.token, source: "flag" };
   }
 
   const envToken = process.env.DECODO_AUTH_TOKEN;
 
   if (envToken) {
-    return { token: envToken, source: 'env' };
+    return { token: envToken, source: "env" };
   }
 
   const config = await readConfig();
 
   if (config?.authToken) {
-    return { token: config.authToken, source: 'config' };
+    return { token: config.authToken, source: "config" };
   }
 
-  return { token: undefined, source: 'none' };
+  return { token: undefined, source: "none" };
 }
 
 export async function requireAuthToken(
-  options: ResolveAuthOptions = {},
+  options: ResolveAuthOptions = {}
 ): Promise<string> {
   const { token } = await resolveAuthToken(options);
 

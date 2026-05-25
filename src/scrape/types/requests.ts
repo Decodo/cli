@@ -1,6 +1,6 @@
-export type ScrapeRequest = {
+export interface ScrapeRequest {
+  query?: string;
   target: string;
   url?: string;
-  query?: string;
   [key: string]: unknown;
-};
+}

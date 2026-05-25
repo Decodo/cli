@@ -1,10 +1,10 @@
-import { mkdtemp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { Command } from 'commander';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Command } from "commander";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('whoamiCommand', () => {
+describe("whoamiCommand", () => {
   let configHome: string;
   let previousConfigHome: string | undefined;
   let previousEnvToken: string | undefined;
@@ -14,21 +14,21 @@ describe('whoamiCommand', () => {
   beforeEach(async () => {
     previousConfigHome = process.env.XDG_CONFIG_HOME;
     previousEnvToken = process.env.DECODO_AUTH_TOKEN;
-    configHome = await mkdtemp(join(tmpdir(), 'decodo-config-'));
+    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
     process.env.XDG_CONFIG_HOME = configHome;
     delete process.env.DECODO_AUTH_TOKEN;
     vi.resetModules();
     exitCode = undefined;
     stdout = [];
 
-    vi.spyOn(process, 'exit').mockImplementation((code) => {
+    vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
       throw new Error(`process.exit:${code}`);
     });
-    vi.spyOn(console, 'log').mockImplementation((msg) => {
+    vi.spyOn(console, "log").mockImplementation((msg) => {
       stdout.push(String(msg));
     });
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(vi.fn());
   });
 
   afterEach(() => {
@@ -46,24 +46,30 @@ describe('whoamiCommand', () => {
     vi.resetModules();
   });
 
-  it('prints auth source and masked token from config', async () => {
-    const { writeConfig } = await import('../../../src/auth/services/config.js');
-    await writeConfig({ authToken: 'abcdefghijklmnop' });
+  it("prints auth source and masked token from config", async () => {
+    const { writeConfig } = await import(
+      "../../../src/auth/services/config.js"
+    );
+    await writeConfig({ authToken: "abcdefghijklmnop" });
 
-    const { whoamiCommand } = await import('../../../src/auth/commands/whoami.js');
+    const { whoamiCommand } = await import(
+      "../../../src/auth/commands/whoami.js"
+    );
     const program = new Command().addCommand(whoamiCommand);
-    await program.parseAsync(['whoami'], { from: 'user' });
+    await program.parseAsync(["whoami"], { from: "user" });
 
-    expect(stdout).toContain('source: config');
-    expect(stdout).toContain('token: abcd...mnop');
+    expect(stdout).toContain("source: config");
+    expect(stdout).toContain("token: abcd...mnop");
   });
 
-  it('exits with code 3 when no token is available', async () => {
-    const { whoamiCommand } = await import('../../../src/auth/commands/whoami.js');
+  it("exits with code 3 when no token is available", async () => {
+    const { whoamiCommand } = await import(
+      "../../../src/auth/commands/whoami.js"
+    );
     const program = new Command().addCommand(whoamiCommand);
     await expect(
-      program.parseAsync(['whoami'], { from: 'user' }),
-    ).rejects.toThrow('process.exit:3');
+      program.parseAsync(["whoami"], { from: "user" })
+    ).rejects.toThrow("process.exit:3");
     expect(exitCode).toBe(3);
   });
 });

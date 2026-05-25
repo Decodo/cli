@@ -1,13 +1,13 @@
-import { createInterface } from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
-import { Command } from 'commander';
-import { AuthenticationError } from '../../platform/errors/authentication-error.js';
-import { DecodoError } from '../../platform/errors/decodo-error.js';
-import { EXIT } from '../../platform/constants.js';
-import { PLAYGROUND_URL } from '../constants.js';
-import { getConfigPath, writeConfig } from '../services/config.js';
-import { getRootOpts } from '../services/global-opts.js';
-import { validateAuthToken } from '../../scrape/services/auth-validation.js';
+import { stdin as input, stdout as output } from "node:process";
+import { createInterface } from "node:readline/promises";
+import { Command } from "commander";
+import { EXIT } from "../../platform/constants.js";
+import { AuthenticationError } from "../../platform/errors/authentication-error.js";
+import { DecodoError } from "../../platform/errors/decodo-error.js";
+import { validateAuthToken } from "../../scrape/services/auth-validation.js";
+import { PLAYGROUND_URL } from "../constants.js";
+import { getConfigPath, writeConfig } from "../services/config.js";
+import { getRootOpts } from "../services/global-opts.js";
 
 const TOKEN_PROMPT = `Paste your Web Scraping API basic auth token (${PLAYGROUND_URL}): `;
 
@@ -15,18 +15,18 @@ async function promptForToken(): Promise<string> {
   const rl = createInterface({ input, output });
   try {
     const token = await rl.question(TOKEN_PROMPT);
-    
+
     return token.trim();
   } finally {
     rl.close();
   }
 }
 
-export const setupCommand = new Command('setup')
-  .description('Configure the Decodo CLI with your auth token')
+export const setupCommand = new Command("setup")
+  .description("Configure the Decodo CLI with your auth token")
   .option(
-    '--token <value>',
-    'Web Scraping API basic auth token (non-interactive)',
+    "--token <value>",
+    "Web Scraping API basic auth token (non-interactive)"
   )
   .action(async (options: { token?: string }, command) => {
     const rootOpts = getRootOpts(command);
@@ -36,7 +36,7 @@ export const setupCommand = new Command('setup')
       (await promptForToken());
 
     if (!token) {
-      console.error('Error: auth token is required.');
+      console.error("Error: auth token is required.");
       process.exit(EXIT.USAGE);
     }
 
@@ -54,11 +54,11 @@ export const setupCommand = new Command('setup')
         console.error(`Error: ${err.message}`);
         process.exit(EXIT.ERROR);
       }
-      
+
       console.error(
-        `Error: ${err instanceof Error ? err.message : 'Setup failed.'}`,
+        `Error: ${err instanceof Error ? err.message : "Setup failed."}`
       );
-      
+
       process.exit(EXIT.ERROR);
     }
   });

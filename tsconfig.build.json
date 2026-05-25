@@ -4,7 +4,8 @@
     "module": "ESNext",
     "outDir": "build/esm",
     "rootDir": "src",
-    "declaration": true
+    "declaration": true,
+    "strictNullChecks": true
   },
   "include": ["src/**/*"]
 }

@@ -1,16 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { validateAuthToken } from '../../../src/scrape/services/auth-validation.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { validateAuthToken } from "../../../src/scrape/services/auth-validation.js";
 
-describe('validateAuthToken', () => {
+describe("validateAuthToken", () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('calls universal scrape against ip.decodo.com', async () => {
+  it("calls universal scrape against ip.decodo.com", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValue({
       ok: true,
@@ -18,17 +18,17 @@ describe('validateAuthToken', () => {
       json: async () => ({ results: [] }),
     } as Response);
 
-    await validateAuthToken('test-token');
+    await validateAuthToken("test-token");
 
     expect(fetchMock).toHaveBeenCalledOnce();
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(init.body as string)).toEqual({
-      target: 'universal',
-      url: 'https://ip.decodo.com',
+      target: "universal",
+      url: "https://ip.decodo.com",
     });
     expect(init.headers).toMatchObject({
-      Authorization: 'Basic test-token',
-      'x-integration': 'cli',
+      Authorization: "Basic test-token",
+      "x-integration": "cli",
     });
   });
 });

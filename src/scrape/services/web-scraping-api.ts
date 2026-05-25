@@ -1,6 +1,6 @@
-import { HttpClient } from '../../platform/services/http.js';
-import type { ScrapeRequest } from '../types/requests.js';
-import type { SyncResponse } from '../types/responses.js';
+import type { HttpClient } from "../../platform/services/http.js";
+import type { ScrapeRequest } from "../types/requests.js";
+import type { SyncResponse } from "../types/responses.js";
 
 export class WebScrapingApi {
   private readonly http: HttpClient;
@@ -9,7 +9,7 @@ export class WebScrapingApi {
     this.http = http;
   }
 
-  async scrape(params: ScrapeRequest): Promise<SyncResponse> {
-    return this.http.post<SyncResponse>('/v2/scrape', params);
+  scrape(params: ScrapeRequest): Promise<SyncResponse> {
+    return this.http.post<SyncResponse>("/v2/scrape", params);
   }
 }

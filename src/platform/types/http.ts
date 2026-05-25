@@ -1,16 +1,22 @@
-export type BasicAuth = {
-  type: 'basic';
+interface BasicAuth {
   token: string;
-};
+  type: "basic";
+}
 
-export type ApiKeyAuth = {
-  type: 'apiKey';
+interface ApiKeyAuth {
   apiKey: string;
-};
+  type: "apiKey";
+}
 
-export type HttpClientConfig = {
-  baseUrl: string;
+export interface HttpClientConfig {
   auth: BasicAuth | ApiKeyAuth;
-  timeoutMs: number;
+  baseUrl: string;
   integrationHeader: string;
-};
+  timeoutMs: number;
+}
+
+export interface ErrorResponse {
+  errors?: unknown[];
+  message?: string;
+  status?: string;
+}
