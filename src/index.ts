@@ -2,6 +2,11 @@
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { setupCommand } from './auth/commands/setup.js';
+import { logoutCommand } from './auth/commands/logout.js';
+import { whoamiCommand } from './auth/commands/whoami.js';
+
+const commandsRegistry = [setupCommand, logoutCommand, whoamiCommand];
 
 function readVersion(): string {
   const entry = process.argv[1];
@@ -20,6 +25,14 @@ function readVersion(): string {
 const program = new Command()
   .name('decodo')
   .description('Official CLI for Decodo APIs')
-  .version(readVersion(), '-V, --version', 'output the version number');
+  .version(readVersion(), '-V, --version', 'output the version number')
+  .option(
+    '--token <token>',
+    'Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)',
+  );
+
+for (const command of commandsRegistry) {
+  program.addCommand(command);
+}
 
 program.parse(process.argv);

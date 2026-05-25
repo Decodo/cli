@@ -26,7 +26,8 @@
   },
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "xdg-basedir": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^25.7.0",
