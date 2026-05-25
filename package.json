@@ -1,0 +1,36 @@
+{
+  "name": "@decodo/cli",
+  "version": "0.1.0",
+  "description": "Official CLI for the Decodo APIs",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "decodo": "./build/esm/index.js",
+    "dcd": "./build/esm/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "pnpm run build:esm && pnpm run build:cjs",
+    "build:esm": "tsc -p tsconfig.build.json",
+    "build:cjs": "tsc -p tsconfig.build.cjs.json && node scripts/rename-cjs.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pretest": "pnpm build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.7.0",
+    "oxlint": "^1.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.0"
+  }
+}
