@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { EXIT } from "../../platform/constants.js";
 import { AUTH_MISSING_MESSAGE } from "../constants.js";
 import { getRootOpts } from "../services/global-opts.js";
-import { maskToken } from "../services/mask-token.js";
+import { mask } from "../services/mask.js";
 import { resolveAuthToken } from "../services/resolve-token.js";
 
 export const whoamiCommand = new Command("whoami")
@@ -19,5 +19,5 @@ export const whoamiCommand = new Command("whoami")
     }
 
     console.log(`source: ${source}`);
-    console.log(`token: ${maskToken(token)}`);
+    console.log(`token: ${mask(token, 4, -4)}`);
   });

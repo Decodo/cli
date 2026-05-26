@@ -38,9 +38,9 @@ describe("HttpClient", () => {
     );
     expect(init.method).toBe("POST");
     expect(init.headers).toMatchObject({
-      Authorization: "Basic abc123",
+      "Authorization": "Basic abc123",
       "Content-Type": "application/json",
-      Accept: "application/json",
+      "Accept": "application/json",
       "x-integration": "cli",
     });
     expect(JSON.parse(init.body as string)).toEqual({

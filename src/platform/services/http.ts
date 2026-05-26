@@ -34,9 +34,9 @@ export class HttpClient {
       const init: RequestInit = {
         method,
         headers: {
-          Authorization: this.authHeader,
+          "Authorization": this.authHeader,
           "Content-Type": "application/json",
-          Accept: "application/json",
+          "Accept": "application/json",
           "x-integration": this.integrationHeader,
         },
         signal: controller.signal,
