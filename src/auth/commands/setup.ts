@@ -41,7 +41,7 @@ export const setupCommand = new Command("setup")
     }
 
     try {
-      await validateAuthToken(token); // TODO: maybe don't validate here, just write the config, discuss with team
+      await validateAuthToken(token);
       await writeConfig({ authToken: token });
       console.log(`Setup complete. Configuration saved to ${getConfigPath()}`);
     } catch (err) {
