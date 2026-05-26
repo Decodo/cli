@@ -1,25 +1,18 @@
-import { mkdtemp, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFile } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 describe("auth config", () => {
-  let configHome: string;
-  let previousConfigHome: string | undefined;
+  let restoreConfigHome: () => void;
+  let configPath: string;
 
   beforeEach(async () => {
-    previousConfigHome = process.env.XDG_CONFIG_HOME;
-    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
-    process.env.XDG_CONFIG_HOME = configHome;
+    ({ configPath, restore: restoreConfigHome } = await isolateConfigHome());
     vi.resetModules();
   });
 
   afterEach(() => {
-    if (previousConfigHome === undefined) {
-      delete process.env.XDG_CONFIG_HOME;
-    } else {
-      process.env.XDG_CONFIG_HOME = previousConfigHome;
-    }
+    restoreConfigHome();
     vi.resetModules();
   });
 
@@ -31,7 +24,7 @@ describe("auth config", () => {
     await writeConfig({
       authToken: "test-token-value",
     });
-    expect(getConfigPath()).toBe(join(configHome, "decodo", "config.json"));
+    expect(getConfigPath()).toBe(configPath);
 
     const saved = await readConfig();
     expect(saved).toEqual({
@@ -44,7 +37,7 @@ describe("auth config", () => {
     });
   });
 
-  it("clears config file on logout", async () => {
+  it("clears config file on reset", async () => {
     const { writeConfig, clearConfig, readConfig } = await import(
       "../../../src/auth/services/config.js"
     );

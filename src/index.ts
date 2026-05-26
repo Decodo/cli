@@ -2,11 +2,11 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Command } from "commander";
-import { logoutCommand } from "./auth/commands/logout.js";
+import { resetCommand } from "./auth/commands/reset.js";
 import { setupCommand } from "./auth/commands/setup.js";
 import { whoamiCommand } from "./auth/commands/whoami.js";
 
-const commandsRegistry = [setupCommand, logoutCommand, whoamiCommand];
+const commandsRegistry = [setupCommand, resetCommand, whoamiCommand];
 
 function readVersion(): string {
   const entry = process.argv[1];

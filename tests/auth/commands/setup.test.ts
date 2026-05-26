@@ -1,8 +1,6 @@
-import { mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 const mockQuestion = vi.hoisted(() => vi.fn());
 
@@ -27,16 +25,13 @@ async function runSetup(
 }
 
 describe("setupCommand", () => {
-  let configHome: string;
-  let previousConfigHome: string | undefined;
+  let restoreConfigHome: () => void;
   let exitCode: number | undefined;
   let stdout: string[];
   let stderr: string[];
 
   beforeEach(async () => {
-    previousConfigHome = process.env.XDG_CONFIG_HOME;
-    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
-    process.env.XDG_CONFIG_HOME = configHome;
+    ({ restore: restoreConfigHome } = await isolateConfigHome());
     vi.resetModules();
     exitCode = undefined;
     stdout = [];
@@ -67,11 +62,7 @@ describe("setupCommand", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    if (previousConfigHome === undefined) {
-      delete process.env.XDG_CONFIG_HOME;
-    } else {
-      process.env.XDG_CONFIG_HOME = previousConfigHome;
-    }
+    restoreConfigHome();
     vi.resetModules();
   });
 

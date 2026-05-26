@@ -1,17 +1,9 @@
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { xdgConfig } from "xdg-basedir";
+import { getConfigDir } from "../../platform/services/paths.js";
 import type { DecodoConfig } from "../types/config.js";
 
 const CONFIG_FILE = "config.json";
-
-function getConfigDir(): string {
-  const base =
-    process.env.XDG_CONFIG_HOME ?? xdgConfig ?? join(homedir(), ".config");
-
-  return join(base, "decodo");
-}
 
 export function getConfigPath(): string {
   return join(getConfigDir(), CONFIG_FILE);

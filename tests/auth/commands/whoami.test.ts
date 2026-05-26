@@ -1,8 +1,6 @@
-import { mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 async function runWhoami(args: string[]): Promise<void> {
   const { whoamiCommand } = await import(
@@ -15,17 +13,14 @@ async function runWhoami(args: string[]): Promise<void> {
 }
 
 describe("whoamiCommand", () => {
-  let configHome: string;
-  let previousConfigHome: string | undefined;
+  let restoreConfigHome: () => void;
   let previousEnvToken: string | undefined;
   let exitCode: number | undefined;
   let stdout: string[];
 
   beforeEach(async () => {
-    previousConfigHome = process.env.XDG_CONFIG_HOME;
+    ({ restore: restoreConfigHome } = await isolateConfigHome());
     previousEnvToken = process.env.DECODO_AUTH_TOKEN;
-    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
-    process.env.XDG_CONFIG_HOME = configHome;
     delete process.env.DECODO_AUTH_TOKEN;
     vi.resetModules();
     exitCode = undefined;
@@ -43,11 +38,7 @@ describe("whoamiCommand", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    if (previousConfigHome === undefined) {
-      delete process.env.XDG_CONFIG_HOME;
-    } else {
-      process.env.XDG_CONFIG_HOME = previousConfigHome;
-    }
+    restoreConfigHome();
     if (previousEnvToken === undefined) {
       delete process.env.DECODO_AUTH_TOKEN;
     } else {

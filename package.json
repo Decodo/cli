@@ -28,7 +28,7 @@
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
     "commander": "^14.0.0",
-    "xdg-basedir": "^5.1.0"
+    "env-paths": "^3.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",

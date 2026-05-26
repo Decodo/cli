@@ -1,28 +1,19 @@
-import { mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 describe("resolveAuthToken", () => {
-  let configHome: string;
-  let previousConfigHome: string | undefined;
+  let restoreConfigHome: () => void;
   let previousEnvToken: string | undefined;
 
   beforeEach(async () => {
-    previousConfigHome = process.env.XDG_CONFIG_HOME;
+    ({ restore: restoreConfigHome } = await isolateConfigHome());
     previousEnvToken = process.env.DECODO_AUTH_TOKEN;
-    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
-    process.env.XDG_CONFIG_HOME = configHome;
     delete process.env.DECODO_AUTH_TOKEN;
     vi.resetModules();
   });
 
   afterEach(() => {
-    if (previousConfigHome === undefined) {
-      delete process.env.XDG_CONFIG_HOME;
-    } else {
-      process.env.XDG_CONFIG_HOME = previousConfigHome;
-    }
+    restoreConfigHome();
     if (previousEnvToken === undefined) {
       delete process.env.DECODO_AUTH_TOKEN;
     } else {
@@ -82,25 +73,18 @@ describe("resolveAuthToken", () => {
 });
 
 describe("requireAuthToken", () => {
-  let configHome: string;
-  let previousConfigHome: string | undefined;
+  let restoreConfigHome: () => void;
   let previousEnvToken: string | undefined;
 
   beforeEach(async () => {
-    previousConfigHome = process.env.XDG_CONFIG_HOME;
+    ({ restore: restoreConfigHome } = await isolateConfigHome());
     previousEnvToken = process.env.DECODO_AUTH_TOKEN;
-    configHome = await mkdtemp(join(tmpdir(), "decodo-config-"));
-    process.env.XDG_CONFIG_HOME = configHome;
     delete process.env.DECODO_AUTH_TOKEN;
     vi.resetModules();
   });
 
   afterEach(() => {
-    if (previousConfigHome === undefined) {
-      delete process.env.XDG_CONFIG_HOME;
-    } else {
-      process.env.XDG_CONFIG_HOME = previousConfigHome;
-    }
+    restoreConfigHome();
     if (previousEnvToken === undefined) {
       delete process.env.DECODO_AUTH_TOKEN;
     } else {
