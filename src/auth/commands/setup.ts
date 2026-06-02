@@ -1,9 +1,8 @@
 import { stdin as input, stdout as output } from "node:process";
 import { createInterface } from "node:readline/promises";
+import { AuthenticationError, DecodoError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { EXIT } from "../../platform/constants.js";
-import { AuthenticationError } from "../../platform/errors/authentication-error.js";
-import { DecodoError } from "../../platform/errors/decodo-error.js";
 import { validateAuthToken } from "../../scrape/services/auth-validation.js";
 import { PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";

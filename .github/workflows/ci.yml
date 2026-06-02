@@ -11,8 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # TODO(published-sdk): use a single checkout at repo root (drop path: cli).
+      - name: Checkout CLI
         uses: actions/checkout@v4
+        with:
+          path: cli
+
+      # TODO(published-sdk): remove — sdk-ts is built and fetched from npm, not sibling checkout.
+      - name: Checkout sdk-ts
+        uses: actions/checkout@v4
+        with:
+          repository: Decodo/sdk-ts
+          path: sdk-ts
+          ref: main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -22,18 +33,31 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+          # TODO(published-sdk): revert to pnpm-lock.yaml (no cli/ prefix).
+          cache-dependency-path: cli/pnpm-lock.yaml
 
-      - name: Install dependencies
+      # TODO(published-sdk): remove — published @decodo/sdk-ts ships prebuilt artifacts.
+      - name: Build sdk-ts
+        run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: sdk-ts
+
+      # TODO(published-sdk): drop working-directory: cli on all steps below.
+      - name: Install CLI dependencies
         run: pnpm install --frozen-lockfile
+        working-directory: cli
 
       - name: Lint
         run: pnpm lint
+        working-directory: cli
 
       - name: Typecheck
         run: pnpm typecheck
+        working-directory: cli
 
       - name: Build
         run: pnpm build
+        working-directory: cli
 
       - name: Test
         run: pnpm test
+        working-directory: cli
