@@ -20,8 +20,9 @@
     "fix": "ultracite fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prebuild": "pnpm --dir ../sdk-ts build",
-    "pretest": "pnpm --dir ../sdk-ts build && pnpm build"
+    "build:sdk-ts": "pnpm --dir ../sdk-ts run build:esm && pnpm --dir ../sdk-ts run build:cjs",
+    "prebuild": "pnpm run build:sdk-ts",
+    "pretest": "pnpm run build:sdk-ts && pnpm build"
   },
   "engines": {
     "node": ">=18.0.0"

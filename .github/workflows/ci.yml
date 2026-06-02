@@ -41,7 +41,8 @@ jobs:
 
       # TODO(published-sdk): remove — published @decodo/sdk-ts ships prebuilt artifacts.
       - name: Build sdk-ts
-        run: pnpm install --frozen-lockfile && pnpm build
+        # codegen needs inputs/decodo.ir.json (gitignored); compile committed src/generated instead.
+        run: pnpm install --frozen-lockfile && pnpm run build:esm && pnpm run build:cjs
         working-directory: sdk-ts
 
       # TODO(published-sdk): drop working-directory: cli on all steps below.
