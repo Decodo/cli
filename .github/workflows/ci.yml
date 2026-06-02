@@ -27,6 +27,9 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          # TODO(published-sdk): drop package_json_file when checkout is at repo root.
+          package_json_file: cli/package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
