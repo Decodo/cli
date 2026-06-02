@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
+    "@types/json-schema": "^7.0.15",
     "@types/node": "^25.7.0",
     "typescript": "^5.3.3",
     "ultracite": "7.7.0",
