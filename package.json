@@ -20,13 +20,16 @@
     "fix": "ultracite fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest": "pnpm build"
+    "build:sdk-ts": "pnpm --dir ../sdk-ts run build:esm && pnpm --dir ../sdk-ts run build:cjs",
+    "prebuild": "pnpm run build:sdk-ts",
+    "pretest": "pnpm run build:sdk-ts && pnpm build"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
+    "@decodo/sdk-ts": "file:../sdk-ts",
     "commander": "^14.0.0",
     "env-paths": "^3.0.0"
   },

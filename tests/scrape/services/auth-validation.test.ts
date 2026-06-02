@@ -21,14 +21,15 @@ describe("validateAuthToken", () => {
     await validateAuthToken("test-token");
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://scraper-api.decodo.com/v2/scrape");
     expect(JSON.parse(init.body as string)).toEqual({
       target: "universal",
       url: "https://ip.decodo.com",
     });
     expect(init.headers).toMatchObject({
       Authorization: "Basic test-token",
-      "x-integration": "cli",
+      "x-integration": "sdk-ts", // TODO(SCR-3150): switch to cli when sdk task lands
     });
   });
 });
