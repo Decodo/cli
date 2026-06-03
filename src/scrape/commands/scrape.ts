@@ -1,8 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { resolveTarget } from "../services/resolve-target.js";
+import { createTargetAction } from "../services/run-target-scrape.js";
 import type { ScrapeOptions } from "../types/scrape-command.js";
-import { createTargetAction } from "./run-target-scrape.js";
 
 function parseHeadersJson(json: string): Record<string, unknown> {
   try {

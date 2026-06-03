@@ -10,18 +10,14 @@ import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { getRootOpts } from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
 import { EXIT } from "../../platform/constants.js";
-import { createDecodoClient } from "../services/client.js";
-import {
-  buildScrapeBody,
-  getTargetCommandConfig,
-} from "../services/command-builder.js";
+import type {
+  ScrapeBodyBuilder,
+  ScrapeResponseHandler,
+} from "../types/run-target-scrape.js";
+import { createDecodoClient } from "./client.js";
+import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
 
-export type ScrapeBodyBuilder = (
-  input: string | undefined,
-  options: Record<string, unknown>
-) => Record<string, unknown>;
-
-function handleScrapeError(err: unknown): never {
+export function handleScrapeError(err: unknown): never {
   if (err instanceof Error && err.message.startsWith("process.exit:")) {
     throw err;
   }
@@ -47,23 +43,30 @@ function handleScrapeError(err: unknown): never {
   process.exit(EXIT.ERROR);
 }
 
-async function executeScrape(
+export async function executeScrape(
   token: string,
   schema: DecodoSchema,
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
+  options: Record<string, unknown>,
+  onResponse?: ScrapeResponseHandler
 ): Promise<void> {
   const client = createDecodoClient(token, schema);
   const response = await client.webScrapingApi.scrape(
     body as unknown as ScrapeRequest
   );
 
-  console.log(JSON.stringify(response, null, 2));
+  if (onResponse) {
+    await onResponse(response, options);
+  } else {
+    console.log(JSON.stringify(response, null, 2));
+  }
 }
 
 export function createTargetAction(
   target: string,
   schema: DecodoSchema,
-  buildBody?: ScrapeBodyBuilder
+  buildBody?: ScrapeBodyBuilder,
+  onResponse?: ScrapeResponseHandler
 ) {
   const config = getTargetCommandConfig(target, schema);
   const resolveBody =
@@ -80,7 +83,7 @@ export function createTargetAction(
     try {
       const token = await requireAuthToken({ token: rootOpts.token });
       const body = resolveBody(input, options);
-      await executeScrape(token, schema, body);
+      await executeScrape(token, schema, body, options, onResponse);
     } catch (err) {
       if (err instanceof AuthRequiredError) {
         console.error(err.message);

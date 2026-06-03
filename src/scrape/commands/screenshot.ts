@@ -1,0 +1,48 @@
+import { type DecodoSchema, Target } from "@decodo/sdk-ts";
+import { Command } from "commander";
+import { writeBinaryOutput } from "../../platform/write-binary.js";
+import { extractPngFromResponse } from "../services/extract-png.js";
+import { resolveTarget } from "../services/resolve-target.js";
+import { createTargetAction } from "../services/run-target-scrape.js";
+import type { ScreenshotOptions } from "../types/screenshot-command.js";
+
+export function createScreenshotCommand(schema: DecodoSchema): Command {
+  return new Command("screenshot")
+    .description(
+      "Capture a PNG screenshot (universal, headless). Use decodo universal --headless png for full options."
+    )
+    .argument("<url>", "URL to screenshot")
+    .option("--country <code>", "Geo / country code (maps to geo)")
+    .option("-o, --output <path>", "Write PNG to file instead of stdout")
+    .option("--target <name>", "Scrape target override (default: universal)")
+    .action(
+      createTargetAction(
+        Target.Universal,
+        schema,
+        (url, options) => {
+          if (url === undefined) {
+            throw new Error("Missing required URL.");
+          }
+
+          const opts = options as ScreenshotOptions;
+          const body: Record<string, unknown> = {
+            target: resolveTarget(opts.target, schema, Target.Universal),
+            url,
+            headless: "png",
+          };
+
+          if (opts.country !== undefined) {
+            body.geo = opts.country;
+          }
+
+          return body;
+        },
+        (response, options) => {
+          const opts = options as ScreenshotOptions;
+          writeBinaryOutput(extractPngFromResponse(response), {
+            output: opts.output,
+          });
+        }
+      )
+    );
+}
