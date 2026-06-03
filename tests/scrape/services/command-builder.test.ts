@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildScrapeBody,
   configureTargetCommand,
-  snakeToCamel,
 } from "../../../src/scrape/services/command-builder.js";
+import { snakeToCamel } from "../../../src/scrape/services/naming.js";
 
 const schema = BundledSchema.shared;
 

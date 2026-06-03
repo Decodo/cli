@@ -1,6 +1,6 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { toKebabCommand } from "../services/target-name.js";
+import { snakeToKebab } from "../services/naming.js";
 
 export function createTargetsCommand(schema: DecodoSchema): Command {
   return new Command("targets")
@@ -11,7 +11,7 @@ export function createTargetsCommand(schema: DecodoSchema): Command {
       for (const target of schema.listTargets()) {
         const group = schema.getTargetMeta(target)?.group ?? "Other";
         const names = grouped.get(group) ?? [];
-        names.push(toKebabCommand(target));
+        names.push(snakeToKebab(target));
         grouped.set(group, names);
       }
 

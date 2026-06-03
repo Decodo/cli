@@ -2,17 +2,8 @@ import type { DecodoSchema } from "@decodo/sdk-ts";
 import { type Command, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
 import type { TargetCommandConfig } from "../types/target-command.js";
+import { snakeToCamel, snakeToKebab } from "./naming.js";
 import { getPrimaryInputField } from "./primary-input.js";
-
-function snakeToKebab(field: string): string {
-  return field.replaceAll("_", "-");
-}
-
-function snakeToCamel(field: string): string {
-  return field.replace(/_([a-z])/g, (_, letter: string) =>
-    letter.toUpperCase()
-  );
-}
 
 function formatOptionHelp(propertySchema: JSONSchema4): string {
   if (propertySchema.description) {
@@ -140,5 +131,3 @@ export function getTargetCommandConfig(
 
   return { target, primaryField, optionFields };
 }
-
-export { snakeToCamel, snakeToKebab };
