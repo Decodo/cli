@@ -1,13 +1,8 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
 import { type Command, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
+import type { TargetCommandConfig } from "../types/target-command.js";
 import { getPrimaryInputField } from "./primary-input.js";
-
-export interface TargetCommandConfig {
-  optionFields: readonly string[];
-  primaryField?: string;
-  target: string;
-}
 
 function snakeToKebab(field: string): string {
   return field.replaceAll("_", "-");
@@ -48,7 +43,6 @@ function addPropertyOption(
   const kebabFlag = snakeToKebab(field);
   const help = formatOptionHelp(propertySchema);
 
-  // Target flags are long-only (no short aliases) to avoid colliding with root --token, --version, etc.
   if (propertySchema.type === "boolean") {
     command.option(`--${kebabFlag}`, help);
     return;

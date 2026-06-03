@@ -3,9 +3,6 @@ export const INTEGRATION_HEADER = "cli";
 
 export const SCHEMA_TTL_MS = 3_600_000;
 
-/** Bundled IR version shipped with @decodo/sdk-ts (offline fallback). */
-export const BUNDLED_SPEC_VERSION = "2.0.1";
-
 export const PRIMARY_INPUT_FIELDS = [
   "query",
   "url",

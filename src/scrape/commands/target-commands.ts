@@ -21,12 +21,3 @@ export function createTargetCommands(schema: DecodoSchema): Command[] {
 
   return commands;
 }
-
-export function registerTargetCommands(
-  program: Command,
-  schema: DecodoSchema
-): void {
-  for (const command of createTargetCommands(schema)) {
-    program.addCommand(command);
-  }
-}
