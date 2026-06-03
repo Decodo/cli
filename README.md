@@ -68,6 +68,8 @@ List targets, inspect help, then run a scrape (examples):
 
 ```bash
 decodo targets
+decodo scrape https://ip.decodo.com
+decodo https://ip.decodo.com
 decodo universal --help
 decodo universal https://ip.decodo.com
 decodo google-search "decodo scraping api"

@@ -2,7 +2,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Command } from "commander";
-import { createCommands } from "./commands/registry.js";
+import { createCommands } from "./cli/register.js";
+import { prepareArgv } from "./cli/services/prepare-argv.js";
 
 function readVersion(): string {
   const entry = process.argv[1];
@@ -28,11 +29,13 @@ const program = new Command()
   );
 
 async function main(): Promise<void> {
-  for (const command of await createCommands()) {
+  const commands = await createCommands();
+
+  for (const command of commands) {
     program.addCommand(command);
   }
 
-  await program.parseAsync(process.argv);
+  await program.parseAsync(prepareArgv(process.argv, commands));
 }
 
 main().catch((err: unknown) => {
