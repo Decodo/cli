@@ -2,11 +2,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Command } from "commander";
-import { resetCommand } from "./auth/commands/reset.js";
-import { setupCommand } from "./auth/commands/setup.js";
-import { whoamiCommand } from "./auth/commands/whoami.js";
-
-const commandsRegistry = [setupCommand, resetCommand, whoamiCommand];
+import { createCommands } from "./commands/registry.js";
 
 function readVersion(): string {
   const entry = process.argv[1];
@@ -31,11 +27,11 @@ const program = new Command()
     "Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)"
   );
 
-for (const command of commandsRegistry) {
-  program.addCommand(command);
-}
-
 async function main(): Promise<void> {
+  for (const command of await createCommands()) {
+    program.addCommand(command);
+  }
+
   await program.parseAsync(process.argv);
 }
 
