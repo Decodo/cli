@@ -4,7 +4,7 @@ import { configureTargetCommand } from "../services/command-builder.js";
 import { snakeToKebab } from "../services/naming.js";
 import { createTargetAction } from "./run-target-scrape.js";
 
-export function createTargetCommands(schema: DecodoSchema): Command[] {
+export function createCodegenTargetCommands(schema: DecodoSchema): Command[] {
   const commands: Command[] = [];
 
   for (const target of schema.listTargets()) {

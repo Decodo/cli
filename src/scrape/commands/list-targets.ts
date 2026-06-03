@@ -2,7 +2,7 @@ import type { DecodoSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { snakeToKebab } from "../services/naming.js";
 
-export function createTargetsCommand(schema: DecodoSchema): Command {
+export function createListTargetsCommand(schema: DecodoSchema): Command {
   return new Command("targets")
     .description("List available scrape targets")
     .action(() => {
