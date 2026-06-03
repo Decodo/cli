@@ -70,6 +70,8 @@ List targets, inspect help, then run a scrape (examples):
 decodo targets
 decodo scrape https://ip.decodo.com
 decodo https://ip.decodo.com
+decodo search "decodo scraping api"
+decodo search "shoes" --engine bing --geo us --limit 2
 decodo universal --help
 decodo universal https://ip.decodo.com
 decodo google-search "decodo scraping api"
