@@ -71,6 +71,9 @@ decodo targets
 decodo scrape https://ip.decodo.com
 decodo search "decodo scraping api"
 decodo search "shoes" --engine bing --geo us --limit 2
+decodo screenshot https://ip.decodo.com -o shot.png
+decodo screenshot https://ip.decodo.com -o ./shots
+decodo screenshot https://ip.decodo.com > shot.png
 decodo universal --help
 decodo universal https://ip.decodo.com
 decodo google-search "decodo scraping api"

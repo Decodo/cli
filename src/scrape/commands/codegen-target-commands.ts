@@ -2,7 +2,7 @@ import type { DecodoSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { configureTargetCommand } from "../services/command-builder.js";
 import { snakeToKebab } from "../services/naming.js";
-import { createTargetAction } from "./run-target-scrape.js";
+import { createTargetAction } from "../services/run-target-scrape.js";
 
 export function createCodegenTargetCommands(schema: DecodoSchema): Command[] {
   const commands: Command[] = [];
