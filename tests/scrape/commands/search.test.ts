@@ -15,19 +15,25 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
 
 describe("createSearchCommand", () => {
   let exitCode: number | undefined;
-  let stdout: string[];
+  let stdout: string | undefined;
 
   beforeEach(() => {
     exitCode = undefined;
-    stdout = [];
+    stdout = undefined;
+
+    Object.defineProperty(process.stdout, "isTTY", {
+      value: false,
+      configurable: true,
+    });
 
     vi.mocked(requireAuthToken).mockResolvedValue("test-token");
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
       throw new Error(`process.exit:${code}`);
     });
-    vi.spyOn(console, "log").mockImplementation((message) => {
-      stdout.push(String(message));
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      stdout = String(chunk);
+      return true;
     });
     vi.spyOn(console, "error").mockImplementation(vi.fn());
   });
@@ -37,7 +43,9 @@ describe("createSearchCommand", () => {
   });
 
   it("posts tier-1 search body and prints JSON response", async () => {
-    const scrape = vi.fn().mockResolvedValue({ results: [{ ok: true }] });
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: { ok: true } }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);
@@ -54,13 +62,13 @@ describe("createSearchCommand", () => {
       target: "google_search",
       query: "coffee",
     });
-    expect(stdout).toEqual([
-      JSON.stringify({ results: [{ ok: true }] }, null, 2),
-    ]);
+    expect(stdout).toBe('{"ok":true}\n');
   });
 
   it("maps --engine bing to bing_search target", async () => {
-    const scrape = vi.fn().mockResolvedValue({ results: [] });
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: "ok" }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);
@@ -81,7 +89,9 @@ describe("createSearchCommand", () => {
   });
 
   it("maps --geo and --limit to geo and page_count", async () => {
-    const scrape = vi.fn().mockResolvedValue({ results: [] });
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: "ok" }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);
@@ -113,7 +123,9 @@ describe("createSearchCommand", () => {
   });
 
   it("resolves --target kebab-case override", async () => {
-    const scrape = vi.fn().mockResolvedValue({ results: [] });
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: "ok" }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);

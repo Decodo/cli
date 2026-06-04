@@ -1,5 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
+import { attachScrapeOutputOptions } from "../../output/attach-output-options.js";
+import { resolveOutputFormat } from "../../output/resolve-format.js";
+import type { OutputOptions } from "../../output/types.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { ScrapeOptions } from "../types/scrape-command.js";
@@ -25,36 +28,48 @@ function parseHeadersJson(json: string): Record<string, unknown> {
 }
 
 export function createScrapeCommand(schema: DecodoSchema): Command {
-  return new Command("scrape")
+  const command = new Command("scrape")
     .description(
       "Scrape a URL (universal target, markdown). Use decodo universal or decodo <target> for full options."
     )
     .argument("<url>", "URL to scrape")
     .option("--country <code>", "Geo / country code (maps to geo)")
     .option("--headers <json>", "Request headers as a JSON object string")
-    .option("--target <name>", "Scrape target override (default: universal)")
-    .action(
-      createTargetAction(Target.Universal, schema, (url, options) => {
-        if (url === undefined) {
-          throw new Error("Missing required URL.");
-        }
+    .option("--target <name>", "Scrape target override (default: universal)");
 
-        const opts = options as ScrapeOptions;
-        const body: Record<string, unknown> = {
-          target: resolveTarget(opts.target, schema, Target.Universal),
-          url,
-          markdown: true,
-        };
+  attachScrapeOutputOptions(command);
 
-        if (opts.country !== undefined) {
-          body.geo = opts.country;
-        }
+  return command.action(
+    createTargetAction(Target.Universal, schema, (url, options) => {
+      if (url === undefined) {
+        throw new Error("Missing required URL.");
+      }
 
-        if (opts.headers !== undefined) {
-          body.headers = parseHeadersJson(opts.headers);
-        }
+      const opts = options as ScrapeOptions & OutputOptions;
+      const resolvedTarget = resolveTarget(
+        opts.target,
+        schema,
+        Target.Universal
+      );
+      const format = resolveOutputFormat(opts, resolvedTarget, schema);
+      const body: Record<string, unknown> = {
+        target: resolvedTarget,
+        url,
+      };
 
-        return body;
-      })
-    );
+      if (format === "markdown") {
+        body.markdown = true;
+      }
+
+      if (opts.country !== undefined) {
+        body.geo = opts.country;
+      }
+
+      if (opts.headers !== undefined) {
+        body.headers = parseHeadersJson(opts.headers);
+      }
+
+      return body;
+    })
+  );
 }

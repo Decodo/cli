@@ -2,6 +2,7 @@ import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
+import { attachScrapeOutputOptions } from "../../../src/output/attach-output-options.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 import { createTargetAction } from "../../../src/scrape/services/run-target-scrape.js";
 
@@ -15,19 +16,25 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
 
 describe("createTargetAction", () => {
   let exitCode: number | undefined;
-  let stdout: string[];
+  let stdout: string | undefined;
 
   beforeEach(() => {
     exitCode = undefined;
-    stdout = [];
+    stdout = undefined;
+
+    Object.defineProperty(process.stdout, "isTTY", {
+      value: false,
+      configurable: true,
+    });
 
     vi.mocked(requireAuthToken).mockResolvedValue("test-token");
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
       throw new Error(`process.exit:${code}`);
     });
-    vi.spyOn(console, "log").mockImplementation((message) => {
-      stdout.push(String(message));
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      stdout = String(chunk);
+      return true;
     });
     vi.spyOn(console, "error").mockImplementation(vi.fn());
   });
@@ -36,19 +43,22 @@ describe("createTargetAction", () => {
     vi.restoreAllMocks();
   });
 
-  it("posts scrape body and prints JSON response", async () => {
-    const scrape = vi.fn().mockResolvedValue({ results: [{ ok: true }] });
+  it("posts scrape body and prints content as JSON", async () => {
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: { ok: true } }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);
 
+    const googleSearch = new Command("google-search")
+      .argument("<input>")
+      .action(createTargetAction("google_search", BundledSchema.shared));
+    attachScrapeOutputOptions(googleSearch);
+
     const program = new Command()
       .option("--token <token>")
-      .addCommand(
-        new Command("google-search")
-          .argument("<input>")
-          .action(createTargetAction("google_search", BundledSchema.shared))
-      );
+      .addCommand(googleSearch);
 
     await program.parseAsync(
       ["google-search", "coffee", "--token", "test-token"],
@@ -59,9 +69,7 @@ describe("createTargetAction", () => {
       target: "google_search",
       query: "coffee",
     });
-    expect(stdout).toEqual([
-      JSON.stringify({ results: [{ ok: true }] }, null, 2),
-    ]);
+    expect(stdout).toBe('{"ok":true}\n');
   });
 
   it("maps requireAuthToken failures through handleScrapeError", async () => {
