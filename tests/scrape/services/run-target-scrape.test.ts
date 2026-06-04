@@ -68,6 +68,8 @@ describe("createTargetAction", () => {
     expect(scrape).toHaveBeenCalledWith({
       target: "google_search",
       query: "coffee",
+      parse: true,
+      markdown: false,
     });
     expect(stdout).toBe('{"ok":true}\n');
   });

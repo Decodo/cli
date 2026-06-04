@@ -78,11 +78,12 @@ decodo screenshot https://ip.decodo.com > shot.png
 decodo universal --help
 decodo universal https://ip.decodo.com
 decodo google-search "decodo scraping api"
-decodo scrape https://ip.decodo.com --format json
+decodo scrape https://ip.decodo.com/json
+decodo google-search "query" --parse
 decodo google-search "query" --full
 ```
 
-By default, scrape commands print the first result's `content` (JSON for parse targets, markdown for universal). Use `--full` for the complete API envelope, `--format` / `--json` / `--html` to control output, and `-o` to write to a file. JSON is compact when piped and indented on a TTY unless you pass `--pretty`.
+By default, commands print the first result's `content` (parsed JSON when the target supports `parse`, markdown for `decodo scrape`). Use `--full` for the complete API envelope, `-o` to write to a file, and `--pretty` for indented JSON. Request shape (`--parse`, `--markdown`, and other API flags) comes from the schema on each target command; use `decodo universal` for full universal options.
 
 ### Tests and checks
 

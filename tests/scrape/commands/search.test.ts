@@ -61,6 +61,8 @@ describe("createSearchCommand", () => {
     expect(scrape).toHaveBeenCalledWith({
       target: "google_search",
       query: "coffee",
+      parse: true,
+      markdown: false,
     });
     expect(stdout).toBe('{"ok":true}\n');
   });
@@ -85,6 +87,8 @@ describe("createSearchCommand", () => {
     expect(scrape).toHaveBeenCalledWith({
       target: "bing_search",
       query: "coffee",
+      parse: true,
+      markdown: false,
     });
   });
 
@@ -119,6 +123,8 @@ describe("createSearchCommand", () => {
       query: "coffee",
       geo: "us",
       page_count: 3,
+      parse: true,
+      markdown: false,
     });
   });
 
@@ -151,6 +157,8 @@ describe("createSearchCommand", () => {
     expect(scrape).toHaveBeenCalledWith({
       target: "google_search",
       query: "coffee",
+      parse: true,
+      markdown: false,
     });
   });
 

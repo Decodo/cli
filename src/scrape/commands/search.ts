@@ -1,6 +1,7 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command, Option } from "commander";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
+import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { SearchOptions } from "../types/search-command.js";
@@ -83,6 +84,8 @@ export function createSearchCommand(schema: DecodoSchema): Command {
         validatePageCount(opts.limit);
         body.page_count = opts.limit;
       }
+
+      applyRequestDefaults(body, body.target as string, schema);
 
       return body;
     })

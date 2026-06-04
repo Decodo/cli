@@ -1,8 +1,7 @@
 import type { SyncResponse } from "@decodo/sdk-ts";
 import type { WriteScrapeResponseContext } from "../types/write-scrape-response.js";
 import { extractPayload } from "./extract-payload.js";
-import { renderOutput } from "./render-output.js";
-import { resolveOutputFormat } from "./resolve-format.js";
+import { renderPayload } from "./render-output.js";
 import { resolvePrettyIndent } from "./resolve-pretty.js";
 import { writeTextOutput } from "./write-text-output.js";
 
@@ -10,12 +9,13 @@ export function writeScrapeResponse(
   response: SyncResponse,
   context: WriteScrapeResponseContext
 ): void {
-  const { schema, target, options } = context;
+  const { options } = context;
   const full = options.full === true;
-  const format = resolveOutputFormat(options, target, schema);
   const indent = resolvePrettyIndent(options);
   const payload = extractPayload(response, full);
-  const text = renderOutput(payload, format, indent, full);
+  const text = full
+    ? JSON.stringify(payload, null, indent)
+    : renderPayload(payload, indent);
 
   writeTextOutput(text, { output: options.output });
 }

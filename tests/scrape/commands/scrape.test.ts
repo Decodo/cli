@@ -67,37 +67,6 @@ describe("createScrapeCommand", () => {
     expect(stdout).toBe("# Example\n");
   });
 
-  it("omits markdown in body when --format json", async () => {
-    const scrape = vi.fn().mockResolvedValue({
-      results: [{ content: { ok: true } }],
-    });
-    vi.mocked(createDecodoClient).mockReturnValue({
-      webScrapingApi: { scrape },
-    } as never);
-
-    const program = new Command()
-      .option("--token <token>")
-      .addCommand(createScrapeCommand(BundledSchema.shared));
-
-    await program.parseAsync(
-      [
-        "scrape",
-        "https://example.com",
-        "--format",
-        "json",
-        "--token",
-        "test-token",
-      ],
-      { from: "user" }
-    );
-
-    expect(scrape).toHaveBeenCalledWith({
-      target: "universal",
-      url: "https://example.com",
-    });
-    expect(stdout).toBe('{"ok":true}\n');
-  });
-
   it("prints full envelope with --full", async () => {
     const response = { results: [{ content: "x", status_code: 200 }] };
     const scrape = vi.fn().mockResolvedValue(response);

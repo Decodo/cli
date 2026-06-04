@@ -1,7 +1,7 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
-import { resolveOutputFormat } from "../../output/services/resolve-format.js";
+import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
@@ -30,7 +30,7 @@ function parseHeadersJson(json: string): Record<string, unknown> {
 export function createScrapeCommand(schema: DecodoSchema): Command {
   const command = new Command("scrape")
     .description(
-      "Scrape a URL (universal target, markdown). Use decodo universal or decodo <target> for full options."
+      "Scrape a URL with the universal target (markdown by default). Use decodo universal for --markdown, --parse, and other API flags."
     )
     .argument("<url>", "URL to scrape")
     .option("--country <code>", "Geo / country code (maps to geo)")
@@ -51,15 +51,12 @@ export function createScrapeCommand(schema: DecodoSchema): Command {
         schema,
         Target.Universal
       );
-      const format = resolveOutputFormat(opts, resolvedTarget, schema);
       const body: Record<string, unknown> = {
         target: resolvedTarget,
         url,
       };
 
-      if (format === "markdown") {
-        body.markdown = true;
-      }
+      applyRequestDefaults(body, resolvedTarget, schema);
 
       if (opts.country !== undefined) {
         body.geo = opts.country;
