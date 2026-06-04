@@ -1,9 +1,10 @@
 import { type DecodoSchema, Target } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { writeBinaryOutput } from "../../platform/write-binary.js";
+import { writeBinaryOutput } from "../../platform/services/write-binary.js";
 import { extractPngFromResponse } from "../services/extract-png.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
+import { defaultScreenshotFilename } from "../services/screenshot-output-filename.js";
 import type { ScreenshotOptions } from "../types/screenshot-command.js";
 
 export function createScreenshotCommand(schema: DecodoSchema): Command {
@@ -13,7 +14,10 @@ export function createScreenshotCommand(schema: DecodoSchema): Command {
     )
     .argument("<url>", "URL to screenshot")
     .option("--country <code>", "Geo / country code (maps to geo)")
-    .option("-o, --output <path>", "Write PNG to file instead of stdout")
+    .option(
+      "-o, --output <path>",
+      "Write PNG to file or directory (default name: <host>.png)"
+    )
     .option("--target <name>", "Scrape target override (default: universal)")
     .action(
       createTargetAction(
@@ -37,10 +41,11 @@ export function createScreenshotCommand(schema: DecodoSchema): Command {
 
           return body;
         },
-        (response, options) => {
+        (response, options, url) => {
           const opts = options as ScreenshotOptions;
           writeBinaryOutput(extractPngFromResponse(response), {
             output: opts.output,
+            defaultFileName: defaultScreenshotFilename(url),
           });
         }
       )

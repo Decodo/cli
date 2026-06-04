@@ -7,5 +7,6 @@ export type ScrapeBodyBuilder = (
 
 export type ScrapeResponseHandler = (
   response: SyncResponse,
-  options: Record<string, unknown>
+  options: Record<string, unknown>,
+  input?: string
 ) => void | Promise<void>;

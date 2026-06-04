@@ -48,7 +48,8 @@ export async function executeScrape(
   schema: DecodoSchema,
   body: Record<string, unknown>,
   options: Record<string, unknown>,
-  onResponse?: ScrapeResponseHandler
+  onResponse?: ScrapeResponseHandler,
+  input?: string
 ): Promise<void> {
   const client = createDecodoClient(token, schema);
   const response = await client.webScrapingApi.scrape(
@@ -56,7 +57,7 @@ export async function executeScrape(
   );
 
   if (onResponse) {
-    await onResponse(response, options);
+    await onResponse(response, options, input);
   } else {
     console.log(JSON.stringify(response, null, 2));
   }
@@ -83,7 +84,7 @@ export function createTargetAction(
     try {
       const token = await requireAuthToken({ token: rootOpts.token });
       const body = resolveBody(input, options);
-      await executeScrape(token, schema, body, options, onResponse);
+      await executeScrape(token, schema, body, options, onResponse, input);
     } catch (err) {
       if (err instanceof AuthRequiredError) {
         console.error(err.message);

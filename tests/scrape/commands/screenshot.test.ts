@@ -5,7 +5,7 @@ import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
-import { BINARY_TTY_ERROR } from "../../../src/platform/write-binary.js";
+import { BINARY_TTY_ERROR } from "../../../src/platform/services/write-binary.js";
 import { createScreenshotCommand } from "../../../src/scrape/commands/screenshot.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 
@@ -89,6 +89,38 @@ describe("createScreenshotCommand", () => {
       expect(readFileSync(path).subarray(0, 8).toString("hex")).toBe(
         "89504e470d0a1a0a"
       );
+      expect(stderr.join("\n")).toContain(path);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("writes default hostname filename when -o is a directory", async () => {
+    mockScrapeWithPng();
+    const dir = mkdtempSync(join(tmpdir(), "decodo-screenshot-dir-"));
+    const expectedPath = join(dir, "example.com.png");
+
+    try {
+      const program = new Command()
+        .option("--token <token>")
+        .addCommand(createScreenshotCommand(BundledSchema.shared));
+
+      await program.parseAsync(
+        [
+          "screenshot",
+          "https://example.com",
+          "-o",
+          dir,
+          "--token",
+          "test-token",
+        ],
+        { from: "user" }
+      );
+
+      expect(readFileSync(expectedPath).subarray(0, 8).toString("hex")).toBe(
+        "89504e470d0a1a0a"
+      );
+      expect(stderr.join("\n")).toContain(expectedPath);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

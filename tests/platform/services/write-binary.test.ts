@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   BINARY_TTY_ERROR,
   writeBinaryOutput,
-} from "../../src/platform/write-binary.js";
+} from "../../../src/platform/services/write-binary.js";
 
 describe("writeBinaryOutput", () => {
   let exitCode: number | undefined;
@@ -40,8 +40,12 @@ describe("writeBinaryOutput", () => {
     const path = join(dir, "out.png");
 
     try {
-      writeBinaryOutput(bytes, { output: path });
+      writeBinaryOutput(bytes, {
+        output: path,
+        defaultFileName: "shot.png",
+      });
       expect(readFileSync(path)).toEqual(bytes);
+      expect(stderr.join("\n")).toContain(`Wrote ${path}`);
       expect(written).toBeUndefined();
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -58,6 +62,21 @@ describe("writeBinaryOutput", () => {
     expect(exitCode).toBe(2);
     expect(stderr.join("\n")).toContain(BINARY_TTY_ERROR);
     expect(written).toBeUndefined();
+  });
+
+  it("writes default filename inside directory when -o is a directory", () => {
+    const dir = mkdtempSync(join(tmpdir(), "decodo-write-binary-"));
+
+    try {
+      writeBinaryOutput(bytes, {
+        output: dir,
+        defaultFileName: "shot.png",
+      });
+      expect(readFileSync(join(dir, "shot.png"))).toEqual(bytes);
+      expect(stderr.join("\n")).toContain(join(dir, "shot.png"));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("writes bytes to stdout when not a TTY", () => {
