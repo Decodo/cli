@@ -1,8 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command, Option } from "commander";
 import { resolveTarget } from "../services/resolve-target.js";
+import { createTargetAction } from "../services/run-target-scrape.js";
 import type { SearchOptions } from "../types/search-command.js";
-import { createTargetAction } from "./run-target-scrape.js";
 
 const ENGINE_TARGETS = {
   google: Target.GoogleSearch,

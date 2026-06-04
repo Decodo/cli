@@ -2,8 +2,8 @@ import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
-import { createTargetAction } from "../../../src/scrape/commands/run-target-scrape.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
+import { createTargetAction } from "../../../src/scrape/services/run-target-scrape.js";
 
 vi.mock("../../../src/auth/services/resolve-token.js", () => ({
   requireAuthToken: vi.fn(),
