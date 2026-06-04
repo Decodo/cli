@@ -2,7 +2,7 @@ import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
-import { attachScrapeOutputOptions } from "../../../src/output/attach-output-options.js";
+import { attachScrapeOutputOptions } from "../../../src/output/commands/attach-output-options.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 import { createTargetAction } from "../../../src/scrape/services/run-target-scrape.js";
 

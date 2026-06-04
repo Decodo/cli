@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { resolvePrettyIndent } from "../../src/output/resolve-pretty.js";
+import { resolvePrettyIndent } from "../../../src/output/services/resolve-pretty.js";
 
 describe("resolvePrettyIndent", () => {
   afterEach(() => {

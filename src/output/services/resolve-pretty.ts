@@ -1,4 +1,4 @@
-import type { OutputOptions } from "./types.js";
+import type { OutputOptions } from "../types/output-options.js";
 
 export function resolvePrettyIndent(
   options: OutputOptions

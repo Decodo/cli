@@ -1,7 +1,7 @@
 import type { SyncResponse } from "@decodo/sdk-ts";
 import { ValidationError } from "@decodo/sdk-ts";
 import { describe, expect, it } from "vitest";
-import { extractPayload } from "../../src/output/extract-payload.js";
+import { extractPayload } from "../../../src/output/services/extract-payload.js";
 
 describe("extractPayload", () => {
   const response: SyncResponse = {

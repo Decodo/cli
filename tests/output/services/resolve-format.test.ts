@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   resolveDefaultFormat,
   resolveOutputFormat,
-} from "../../src/output/resolve-format.js";
+} from "../../../src/output/services/resolve-format.js";
 
 const schema = BundledSchema.shared;
 

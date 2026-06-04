@@ -1,7 +1,7 @@
 import type { SyncResponse } from "@decodo/sdk-ts";
 import { BundledSchema } from "@decodo/sdk-ts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { writeScrapeResponse } from "../../src/output/write-scrape-response.js";
+import { writeScrapeResponse } from "../../../src/output/services/write-scrape-response.js";
 
 describe("writeScrapeResponse", () => {
   let written: string | undefined;

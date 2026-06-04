@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { Option } from "commander";
-import { OUTPUT_FORMATS } from "./types.js";
+import { OUTPUT_FORMATS } from "../types/output-options.js";
 
 export interface AttachScrapeOutputOptionsConfig {
   outputHelp?: string;

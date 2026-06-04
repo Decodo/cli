@@ -1,4 +1,4 @@
-import type { OutputFormat } from "./types.js";
+import type { OutputFormat } from "../types/output-options.js";
 
 function stringifyForText(payload: unknown): string {
   if (typeof payload === "string") {

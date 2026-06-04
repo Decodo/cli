@@ -1,6 +1,6 @@
 import { type DecodoSchema, Target } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { attachScrapeOutputOptions } from "../../output/attach-output-options.js";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { writeBinaryOutput } from "../../platform/services/write-binary.js";
 import { extractPngFromResponse } from "../services/extract-png.js";
 import { resolveTarget } from "../services/resolve-target.js";

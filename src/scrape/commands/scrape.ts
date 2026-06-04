@@ -1,8 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { attachScrapeOutputOptions } from "../../output/attach-output-options.js";
-import { resolveOutputFormat } from "../../output/resolve-format.js";
-import type { OutputOptions } from "../../output/types.js";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
+import { resolveOutputFormat } from "../../output/services/resolve-format.js";
+import type { OutputOptions } from "../../output/types/output-options.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { ScrapeOptions } from "../types/scrape-command.js";

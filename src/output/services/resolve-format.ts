@@ -1,7 +1,7 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
-import { ValidationError } from "@decodo/sdk-ts";
-import type { OutputFormat, OutputOptions } from "./types.js";
-import { OUTPUT_FORMATS } from "./types.js";
+import { Target, ValidationError } from "@decodo/sdk-ts";
+import type { OutputFormat, OutputOptions } from "../types/output-options.js";
+import { OUTPUT_FORMATS } from "../types/output-options.js";
 
 export function resolveDefaultFormat(
   target: string,
@@ -15,7 +15,7 @@ export function resolveDefaultFormat(
   }
 
   if (
-    target === "universal" ||
+    target === Target.Universal ||
     (properties.markdown !== undefined && properties.parse === undefined)
   ) {
     return "markdown";

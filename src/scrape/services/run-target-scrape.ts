@@ -9,8 +9,8 @@ import type { Command } from "commander";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { getRootOpts } from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
-import type { OutputOptions } from "../../output/types.js";
-import { writeScrapeResponse } from "../../output/write-scrape-response.js";
+import type { OutputOptions } from "../../output/types/output-options.js";
+import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import { EXIT } from "../../platform/constants.js";
 import type {
   ScrapeBodyBuilder,

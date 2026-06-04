@@ -1,7 +1,7 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
 import { type Command, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
-import { attachScrapeOutputOptions } from "../../output/attach-output-options.js";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import type { TargetCommandConfig } from "../types/target-command.js";
 import { snakeToCamel, snakeToKebab } from "./naming.js";
 import { getPrimaryInputField } from "./primary-input.js";
