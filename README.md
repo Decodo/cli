@@ -69,7 +69,6 @@ List targets, inspect help, then run a scrape (examples):
 ```bash
 decodo targets
 decodo scrape https://ip.decodo.com
-decodo https://ip.decodo.com
 decodo search "decodo scraping api"
 decodo search "shoes" --engine bing --geo us --limit 2
 decodo universal --help
