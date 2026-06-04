@@ -1,28 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { kebabToSnake } from "../services/naming.js";
+import { resolveTarget } from "../services/resolve-target.js";
 import type { ScrapeOptions } from "../types/scrape-command.js";
 import { createTargetAction } from "./run-target-scrape.js";
-
-function resolveScrapeTarget(
-  name: string | undefined,
-  schema: DecodoSchema
-): string {
-  if (!name) {
-    return Target.Universal;
-  }
-
-  const candidates = [name, kebabToSnake(name)];
-  const targets = schema.listTargets();
-
-  for (const candidate of candidates) {
-    if (targets.includes(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new ValidationError(`Unknown scrape target: ${name}`);
-}
 
 function parseHeadersJson(json: string): Record<string, unknown> {
   try {
@@ -61,7 +41,7 @@ export function createScrapeCommand(schema: DecodoSchema): Command {
 
         const opts = options as ScrapeOptions;
         const body: Record<string, unknown> = {
-          target: resolveScrapeTarget(opts.target, schema),
+          target: resolveTarget(opts.target, schema, Target.Universal),
           url,
           markdown: true,
         };
