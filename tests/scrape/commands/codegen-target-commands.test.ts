@@ -1,14 +1,14 @@
 import { BundledSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
-import { createTargetCommands } from "../../../src/scrape/commands/target-commands.js";
+import { createCodegenTargetCommands } from "../../../src/scrape/commands/codegen-target-commands.js";
 
-describe("createTargetCommands", () => {
+describe("createCodegenTargetCommands", () => {
   it("builds one subcommand per target", () => {
     const program = new Command();
     const schema = BundledSchema.shared;
 
-    for (const command of createTargetCommands(schema)) {
+    for (const command of createCodegenTargetCommands(schema)) {
       program.addCommand(command);
     }
 

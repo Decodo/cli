@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  kebabToSnake,
   snakeToCamel,
   snakeToKebab,
 } from "../../../src/scrape/services/naming.js";
@@ -13,5 +14,9 @@ describe("naming", () => {
 
   it("converts snake_case to camelCase", () => {
     expect(snakeToCamel("page_from")).toBe("pageFrom");
+  });
+
+  it("converts kebab-case to snake_case", () => {
+    expect(kebabToSnake("google-search")).toBe("google_search");
   });
 });

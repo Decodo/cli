@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Command } from "commander";
-import { createCommands } from "./commands/registry.js";
+import { createCommands } from "./cli/register.js";
 
 function readVersion(): string {
   const entry = process.argv[1];

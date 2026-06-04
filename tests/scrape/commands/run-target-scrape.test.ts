@@ -64,6 +64,27 @@ describe("createTargetAction", () => {
     ]);
   });
 
+  it("maps requireAuthToken failures through handleScrapeError", async () => {
+    vi.mocked(requireAuthToken).mockRejectedValue(
+      new SyntaxError("Unexpected token in config.json")
+    );
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(
+        new Command("google-search")
+          .argument("<input>")
+          .action(createTargetAction("google_search", BundledSchema.shared))
+      );
+
+    await expect(
+      program.parseAsync(["google-search", "coffee"], { from: "user" })
+    ).rejects.toThrow("process.exit:1");
+
+    expect(exitCode).toBe(1);
+    expect(createDecodoClient).not.toHaveBeenCalled();
+  });
+
   it("maps validation errors to usage exit code", async () => {
     const scrape = vi
       .fn()
