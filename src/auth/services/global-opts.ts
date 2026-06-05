@@ -6,6 +6,7 @@ export interface RootOptions {
   token?: string;
   timeout?: number;
   maxRetries?: number;
+  verbose?: boolean;
 }
 
 export function getRootOpts(command: Command): RootOptions {

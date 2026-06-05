@@ -10,6 +10,7 @@ const BASE_DELAY_MS = 1000;
 
 export interface RetryWithBackoffOptions {
   maxRetries: number;
+  onRetry?: (attempt: number) => void;
 }
 
 function wait(ms: number): Promise<void> {
@@ -56,6 +57,7 @@ export async function retryWithBackoff<T>(
         throw error;
       }
 
+      options.onRetry?.(attempt + 1);
       await wait(BASE_DELAY_MS * 2 ** attempt);
     }
   }
