@@ -86,4 +86,26 @@ describe("buildScrapeBody", () => {
       markdown: false,
     });
   });
+
+  it("does not override explicit parse: false from options", () => {
+    const config = configureTargetCommand(
+      new Command("google-search"),
+      "google_search",
+      schema
+    );
+    const body = buildScrapeBody(
+      "google_search",
+      "coffee",
+      { parse: false },
+      config,
+      schema
+    );
+
+    expect(body).toEqual({
+      target: "google_search",
+      query: "coffee",
+      parse: false,
+      markdown: false,
+    });
+  });
 });
