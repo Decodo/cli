@@ -81,9 +81,10 @@ decodo google-search "decodo scraping api"
 decodo scrape https://ip.decodo.com/json
 decodo google-search "query" --parse
 decodo google-search "query" --full
+decodo google-search "query" --format ndjson --full
 ```
 
-By default, commands print the first result's `content` (parsed JSON when the target supports `parse`, markdown for `decodo scrape`). Use `--full` for the complete API envelope, `-o` to write to a file, and `--pretty` for indented JSON. Request shape (`--parse`, `--markdown`, and other API flags) comes from the schema on each target command; use `decodo universal` for full universal options.
+By default, commands print the first result's `content` (parsed JSON when the target supports `parse`, markdown for `decodo scrape`). Use `--full` for the complete API envelope, `--format ndjson` for one JSON object per result (pipe-friendly), `-o` to write to a file, and `--pretty` for indented JSON. Request shape (`--parse`, `--markdown`, and other API flags) comes from the schema on each target command; use `decodo universal` for full universal options.
 
 ### Tests and checks
 

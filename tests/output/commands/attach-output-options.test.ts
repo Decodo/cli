@@ -8,9 +8,13 @@ describe("attachScrapeOutputOptions", () => {
     const flags = command.options.map((o) => o.flags);
 
     expect(flags).toEqual(
-      expect.arrayContaining(["--full", "--pretty", "-o, --output <path>"])
+      expect.arrayContaining([
+        "--format <format>",
+        "--full",
+        "--pretty",
+        "-o, --output <path>",
+      ])
     );
-    expect(flags).not.toContain("--format <format>");
     expect(flags).not.toContain("--json");
     expect(flags).not.toContain("--html");
   });

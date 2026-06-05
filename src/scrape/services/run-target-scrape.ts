@@ -11,10 +11,11 @@ import { getRootOpts } from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
+import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { EXIT } from "../../platform/constants.js";
 import type {
+  OutputContextBuilder,
   ScrapeBodyBuilder,
-  ScrapeResponseHandler,
 } from "../types/run-target-scrape.js";
 import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
@@ -50,7 +51,7 @@ export async function executeScrape(
   schema: DecodoSchema,
   body: Record<string, unknown>,
   options: Record<string, unknown>,
-  onResponse?: ScrapeResponseHandler,
+  outputContext?: Partial<WriteScrapeResponseContext>,
   input?: string
 ): Promise<void> {
   const client = createDecodoClient(token, schema);
@@ -58,20 +59,18 @@ export async function executeScrape(
     body as unknown as ScrapeRequest
   );
 
-  if (onResponse) {
-    await onResponse(response, options, input);
-  } else {
-    writeScrapeResponse(response, {
-      options: options as OutputOptions,
-    });
-  }
+  writeScrapeResponse(response, {
+    options: options as OutputOptions,
+    input,
+    ...outputContext,
+  });
 }
 
 export function createTargetAction(
   target: string,
   schema: DecodoSchema,
   buildBody?: ScrapeBodyBuilder,
-  onResponse?: ScrapeResponseHandler
+  getOutputContext?: OutputContextBuilder
 ) {
   const config = getTargetCommandConfig(target, schema);
   const resolveBody =
@@ -89,7 +88,8 @@ export function createTargetAction(
     try {
       const token = await requireAuthToken({ token: rootOpts.token });
       const body = resolveBody(input, options);
-      await executeScrape(token, schema, body, options, onResponse, input);
+      const outputContext = getOutputContext?.(input, options);
+      await executeScrape(token, schema, body, options, outputContext, input);
     } catch (err) {
       if (err instanceof AuthRequiredError) {
         console.error(err.message);

@@ -1,11 +1,8 @@
 import { type DecodoSchema, Target } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
-import { writeBinaryOutput } from "../../platform/services/write-binary.js";
-import { extractPngFromResponse } from "../services/extract-png.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
-import { defaultScreenshotFilename } from "../services/screenshot-output-filename.js";
 import type { ScreenshotOptions } from "../types/screenshot-command.js";
 
 export function createScreenshotCommand(schema: DecodoSchema): Command {
@@ -43,13 +40,10 @@ export function createScreenshotCommand(schema: DecodoSchema): Command {
 
         return body;
       },
-      (response, options, url) => {
-        const opts = options as ScreenshotOptions;
-        writeBinaryOutput(extractPngFromResponse(response), {
-          output: opts.output,
-          defaultFileName: defaultScreenshotFilename(url),
-        });
-      }
+      (url) => ({
+        binary: { kind: "png" },
+        input: url,
+      })
     )
   );
 }
