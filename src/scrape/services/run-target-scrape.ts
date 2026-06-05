@@ -1,11 +1,15 @@
 import type { DecodoSchema, ScrapeRequest } from "@decodo/sdk-ts";
 import type { Command } from "commander";
-import { getRootOpts } from "../../auth/services/global-opts.js";
+import {
+  DEFAULT_MAX_RETRIES,
+  getRootOpts,
+} from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
+import { retryWithBackoff } from "../../platform/services/retry-with-backoff.js";
 import type {
   OutputContextBuilder,
   ScrapeBodyBuilder,
@@ -18,12 +22,15 @@ export async function executeScrape(
   schema: DecodoSchema,
   body: Record<string, unknown>,
   options: Record<string, unknown>,
+  timeoutMs?: number,
+  maxRetries = DEFAULT_MAX_RETRIES,
   outputContext?: Partial<WriteScrapeResponseContext>,
   input?: string
 ): Promise<void> {
-  const client = createDecodoClient(token, schema);
-  const response = await client.webScrapingApi.scrape(
-    body as unknown as ScrapeRequest
+  const client = createDecodoClient(token, schema, timeoutMs);
+  const response = await retryWithBackoff(
+    () => client.webScrapingApi.scrape(body as unknown as ScrapeRequest),
+    { maxRetries }
   );
 
   writeScrapeResponse(response, {
@@ -56,7 +63,16 @@ export function createTargetAction(
       const token = await requireAuthToken({ token: rootOpts.token });
       const body = resolveBody(input, options);
       const outputContext = getOutputContext?.(input, options);
-      await executeScrape(token, schema, body, options, outputContext, input);
+      await executeScrape(
+        token,
+        schema,
+        body,
+        options,
+        rootOpts.timeout,
+        rootOpts.maxRetries ?? DEFAULT_MAX_RETRIES,
+        outputContext,
+        input
+      );
     } catch (err) {
       handleCliError(err, { fallbackMessage: "Scrape failed." });
     }
