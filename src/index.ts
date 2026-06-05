@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { Command } from "commander";
 import { createCommands } from "./cli/register.js";
+import { handleCliError } from "./platform/services/handle-cli-error.js";
 
 function readVersion(): string {
   const entry = process.argv[1];
@@ -36,6 +37,5 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
+  handleCliError(err);
 });

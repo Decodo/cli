@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { EXIT } from "../../platform/constants.js";
-import { AUTH_MISSING_MESSAGE } from "../constants.js";
+import { handleCliError } from "../../platform/services/handle-cli-error.js";
+import { AuthRequiredError } from "../errors/auth-required-error.js";
 import { getRootOpts } from "../services/global-opts.js";
 import { mask } from "../services/mask.js";
 import { resolveAuthToken } from "../services/resolve-token.js";
@@ -14,8 +14,7 @@ export const whoamiCommand = new Command("whoami")
     });
 
     if (!token) {
-      console.error(AUTH_MISSING_MESSAGE);
-      process.exit(EXIT.AUTH);
+      handleCliError(new AuthRequiredError());
     }
 
     console.log(`source: ${source}`);

@@ -205,7 +205,7 @@ describe("createScreenshotCommand", () => {
     expect(stdoutBytes).toBeUndefined();
   });
 
-  it("maps validation errors to usage exit code", async () => {
+  it("maps validation errors to validation exit code", async () => {
     const scrape = vi
       .fn()
       .mockRejectedValue(new ValidationError("invalid params"));
@@ -229,12 +229,12 @@ describe("createScreenshotCommand", () => {
         ],
         { from: "user" }
       )
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 
-  it("maps unknown target to usage exit code", async () => {
+  it("maps unknown target to validation exit code", async () => {
     const program = new Command()
       .option("--token <token>")
       .addCommand(createScreenshotCommand(BundledSchema.shared));
@@ -251,12 +251,12 @@ describe("createScreenshotCommand", () => {
         ],
         { from: "user" }
       )
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 
-  it("maps invalid PNG content to usage exit code", async () => {
+  it("maps invalid PNG content to validation exit code", async () => {
     const scrape = vi.fn().mockResolvedValue({
       results: [{ content: Buffer.from("not-png").toString("base64") }],
     });
@@ -280,8 +280,8 @@ describe("createScreenshotCommand", () => {
         ],
         { from: "user" }
       )
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 });
