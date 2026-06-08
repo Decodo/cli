@@ -12,9 +12,8 @@
     "build"
   ],
   "scripts": {
-    "build": "pnpm run build:esm && pnpm run build:cjs",
+    "build": "tsc -p tsconfig.build.json",
     "build:esm": "tsc -p tsconfig.build.json",
-    "build:cjs": "tsc -p tsconfig.build.cjs.json && node scripts/rename-cjs.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "ultracite check",
     "fix": "ultracite fix",
