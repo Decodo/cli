@@ -43,6 +43,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Verify publish artifact
+        run: pnpm run verify:publish
+
       - name: Ensure npm supports trusted publishing
         run: npm install -g npm@latest
 

@@ -30,7 +30,9 @@
     "fix": "ultracite fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest": "pnpm build"
+    "pretest": "pnpm build",
+    "verify:publish": "node scripts/verify-publish.mjs",
+    "prepublishOnly": "pnpm run verify:publish"
   },
   "engines": {
     "node": ">=18.0.0"
