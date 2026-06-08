@@ -4,6 +4,17 @@
   "description": "Official CLI for the Decodo APIs",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Decodo/cli.git"
+  },
+  "homepage": "https://github.com/Decodo/cli#readme",
+  "bugs": {
+    "url": "https://github.com/Decodo/cli/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "decodo": "./build/esm/index.js",
     "dcd": "./build/esm/index.js"
