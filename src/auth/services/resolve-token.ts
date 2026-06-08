@@ -1,4 +1,3 @@
-import { AuthRequiredError } from "../errors/auth-required-error.js";
 import { readConfig } from "./config.js";
 
 export type AuthSource = "flag" | "env" | "config" | "none";
@@ -32,16 +31,4 @@ export async function resolveAuthToken(
   }
 
   return { token: undefined, source: "none" };
-}
-
-export async function requireAuthToken(
-  options: ResolveAuthOptions = {}
-): Promise<string> {
-  const { token } = await resolveAuthToken(options);
-
-  if (!token) {
-    throw new AuthRequiredError();
-  }
-
-  return token;
 }

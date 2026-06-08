@@ -1,12 +1,12 @@
 import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
+import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { createSearchCommand } from "../../../src/scrape/commands/search.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 
 vi.mock("../../../src/auth/services/resolve-token.js", () => ({
-  requireAuthToken: vi.fn(),
+  resolveAuthToken: vi.fn(),
 }));
 
 vi.mock("../../../src/scrape/services/client.js", () => ({
@@ -26,7 +26,10 @@ describe("createSearchCommand", () => {
       configurable: true,
     });
 
-    vi.mocked(requireAuthToken).mockResolvedValue("test-token");
+    vi.mocked(resolveAuthToken).mockResolvedValue({
+      token: "test-token",
+      source: "flag",
+    });
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
       throw new Error(`process.exit:${code}`);

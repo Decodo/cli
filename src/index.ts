@@ -23,6 +23,7 @@ const program = new Command()
   .name("decodo")
   .description("Official CLI for Decodo APIs")
   .version(readVersion(), "-V, --version", "output the version number")
+  .option("-v, --verbose", "Print debug logs to stderr")
   .option(
     "--token <token>",
     "Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)"

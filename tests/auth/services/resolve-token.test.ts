@@ -71,36 +71,3 @@ describe("resolveAuthToken", () => {
     expect(result).toEqual({ token: undefined, source: "none" });
   });
 });
-
-describe("requireAuthToken", () => {
-  let restoreConfigHome: () => void;
-  let previousEnvToken: string | undefined;
-
-  beforeEach(async () => {
-    ({ restore: restoreConfigHome } = await isolateConfigHome());
-    previousEnvToken = process.env.DECODO_AUTH_TOKEN;
-    delete process.env.DECODO_AUTH_TOKEN;
-    vi.resetModules();
-  });
-
-  afterEach(() => {
-    restoreConfigHome();
-    if (previousEnvToken === undefined) {
-      delete process.env.DECODO_AUTH_TOKEN;
-    } else {
-      process.env.DECODO_AUTH_TOKEN = previousEnvToken;
-    }
-    vi.resetModules();
-  });
-
-  it("throws AuthRequiredError when no token is available", async () => {
-    const { requireAuthToken } = await import(
-      "../../../src/auth/services/resolve-token.js"
-    );
-    const { AuthRequiredError } = await import(
-      "../../../src/auth/errors/auth-required-error.js"
-    );
-    await expect(requireAuthToken()).rejects.toBeInstanceOf(AuthRequiredError);
-    await expect(requireAuthToken()).rejects.toThrow("decodo setup");
-  });
-});

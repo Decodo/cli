@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { requireAuthToken } from "../../../src/auth/services/resolve-token.js";
+import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { BINARY_TTY_ERROR } from "../../../src/platform/services/write-binary.js";
 import { createScreenshotCommand } from "../../../src/scrape/commands/screenshot.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
@@ -13,7 +13,7 @@ const MINIMAL_PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAD0JEQVQImWP4GwADAwEAAv6C7p4AAAAASUVORK5CYII=";
 
 vi.mock("../../../src/auth/services/resolve-token.js", () => ({
-  requireAuthToken: vi.fn(),
+  resolveAuthToken: vi.fn(),
 }));
 
 vi.mock("../../../src/scrape/services/client.js", () => ({
@@ -30,7 +30,10 @@ describe("createScreenshotCommand", () => {
     stderr = [];
     stdoutBytes = undefined;
 
-    vi.mocked(requireAuthToken).mockResolvedValue("test-token");
+    vi.mocked(resolveAuthToken).mockResolvedValue({
+      token: "test-token",
+      source: "flag",
+    });
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
       throw new Error(`process.exit:${code}`);

@@ -19,4 +19,14 @@ describe("cli", () => {
 
     expect(output).toBe(packageJson.version);
   });
+
+  it("shows verbose flag in root help", () => {
+    const output = execFileSync(
+      process.execPath,
+      [join(rootDir, "..", "build", "esm", "index.js"), "--help"],
+      { encoding: "utf8" }
+    );
+
+    expect(output).toContain("-v, --verbose");
+  });
 });
