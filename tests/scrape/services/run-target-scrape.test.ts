@@ -74,7 +74,7 @@ describe("createTargetAction", () => {
     expect(stdout).toBe('{"ok":true}\n');
   });
 
-  it("maps requireAuthToken failures through handleScrapeError", async () => {
+  it("maps requireAuthToken failures through handleCliError", async () => {
     vi.mocked(requireAuthToken).mockRejectedValue(
       new SyntaxError("Unexpected token in config.json")
     );

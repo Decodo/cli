@@ -13,10 +13,6 @@ import type {
 import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
 
-export function handleScrapeError(err: unknown): never {
-  handleCliError(err, { fallbackMessage: "Scrape failed." });
-}
-
 export async function executeScrape(
   token: string,
   schema: DecodoSchema,
@@ -62,7 +58,7 @@ export function createTargetAction(
       const outputContext = getOutputContext?.(input, options);
       await executeScrape(token, schema, body, options, outputContext, input);
     } catch (err) {
-      handleScrapeError(err);
+      handleCliError(err, { fallbackMessage: "Scrape failed." });
     }
   };
 }

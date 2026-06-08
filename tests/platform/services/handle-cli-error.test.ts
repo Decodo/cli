@@ -12,20 +12,6 @@ import {
   handleCliError,
 } from "../../../src/platform/services/handle-cli-error.js";
 
-type ErrorConstructor<T extends Error> = new (...args: unknown[]) => T;
-
-function createError<T extends Error>(
-  ctor: ErrorConstructor<T>,
-  message: string,
-  extras: Record<string, unknown> = {}
-): T {
-  const err = Object.create(ctor.prototype) as T & Record<string, unknown>;
-  err.name = ctor.name;
-  err.message = message;
-  Object.assign(err, extras);
-  return err;
-}
-
 describe("handleCliError", () => {
   let exitCode: number | undefined;
   let stderr: string[];
@@ -48,9 +34,9 @@ describe("handleCliError", () => {
   });
 
   it("maps auth-required errors to exit code 3 with setup hint", () => {
-    expect(() => handleCliError(new AuthRequiredError("token missing"))).toThrow(
-      "process.exit:3"
-    );
+    expect(() =>
+      handleCliError(new AuthRequiredError("token missing"))
+    ).toThrow("process.exit:3");
 
     expect(exitCode).toBe(3);
     expect(stderr.join("\n")).toContain("token missing");
@@ -58,16 +44,17 @@ describe("handleCliError", () => {
   });
 
   it("maps SDK authentication errors to exit code 3", () => {
-    const err = createError(AuthenticationError, "Unauthorized");
+    const err = new AuthenticationError("Unauthorized");
 
     expect(() => handleCliError(err)).toThrow("process.exit:3");
     expect(exitCode).toBe(3);
   });
 
   it("maps validation errors to exit code 4 and prints details", () => {
-    const err = createError(ValidationError, "invalid payload", {
-      errors: [{ message: "query is required" }, "geo must be 2 letters"],
-    });
+    const err = new ValidationError("invalid payload", [
+      { message: "query is required" },
+      "geo must be 2 letters",
+    ]);
 
     expect(() => handleCliError(err)).toThrow("process.exit:4");
 
@@ -78,7 +65,7 @@ describe("handleCliError", () => {
   });
 
   it("maps rate-limit errors to exit code 5 with retry hint", () => {
-    const err = createError(RateLimitError, "Rate limit exceeded");
+    const err = new RateLimitError("Rate limit exceeded");
 
     expect(() => handleCliError(err)).toThrow("process.exit:5");
 
@@ -87,14 +74,14 @@ describe("handleCliError", () => {
   });
 
   it("maps timeout errors to exit code 6", () => {
-    const err = createError(TimeoutError, "Gateway timeout");
+    const err = new TimeoutError("Gateway timeout");
 
     expect(() => handleCliError(err)).toThrow("process.exit:6");
     expect(exitCode).toBe(6);
   });
 
   it("maps other Decodo errors to exit code 7", () => {
-    const err = createError(DecodoError, "Network unreachable");
+    const err = new DecodoError("Network unreachable", 503);
 
     expect(() => handleCliError(err)).toThrow("process.exit:7");
     expect(exitCode).toBe(7);
@@ -110,7 +97,10 @@ describe("handleCliError", () => {
 
   it("maps unknown errors to exit code 1", () => {
     expect(() =>
-      handleCliError({ reason: "unexpected crash" }, { fallbackMessage: "Oops" })
+      handleCliError(
+        { reason: "unexpected crash" },
+        { fallbackMessage: "Oops" }
+      )
     ).toThrow("process.exit:1");
 
     expect(exitCode).toBe(1);

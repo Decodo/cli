@@ -91,10 +91,7 @@ export function handleCliError(
   err: unknown,
   options: { fallbackMessage?: string } = {}
 ): never {
-  if (
-    err instanceof Error &&
-    err.message.startsWith(EXIT_SIGNAL_PREFIX)
-  ) {
+  if (err instanceof Error && err.message.startsWith(EXIT_SIGNAL_PREFIX)) {
     throw err;
   }
 
