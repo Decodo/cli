@@ -1,4 +1,4 @@
-const SENSITIVE_QUERY_PARAM_KEYS = new Set([
+const SENSITIVE_QUERY_PARAM_KEYS = [
   "auth",
   "authorization",
   "apikey",
@@ -7,13 +7,21 @@ const SENSITIVE_QUERY_PARAM_KEYS = new Set([
   "password",
   "secret",
   "token",
-]);
+] as const;
+
+function isSensitiveQueryParamKey(key: string): boolean {
+  const normalized = key.toLowerCase();
+
+  return SENSITIVE_QUERY_PARAM_KEYS.some((sensitive) =>
+    normalized.includes(sensitive)
+  );
+}
 
 function sanitizeUrlForLog(value: string): string {
   try {
     const parsed = new URL(value);
     for (const key of parsed.searchParams.keys()) {
-      if (SENSITIVE_QUERY_PARAM_KEYS.has(key.toLowerCase())) {
+      if (isSensitiveQueryParamKey(key)) {
         parsed.searchParams.set(key, "<redacted>");
       }
     }

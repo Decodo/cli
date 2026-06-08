@@ -6,9 +6,9 @@ import { getRootOpts } from "../../cli/services/global-opts.js";
 import { verboseLog } from "../../cli/services/verbose-log.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
-import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import type {
+  ExecuteScrapeOptions,
   OutputContextBuilder,
   ScrapeBodyBuilder,
 } from "../types/run-target-scrape.js";
@@ -16,15 +16,15 @@ import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
 import { formatScrapeRequestLog } from "./format-scrape-request-log.js";
 
-export async function executeScrape(
-  token: string,
-  schema: DecodoSchema,
-  body: Record<string, unknown>,
-  options: Record<string, unknown>,
-  outputContext?: Partial<WriteScrapeResponseContext>,
-  input?: string,
-  verbose = false
-): Promise<void> {
+async function executeScrape({
+  token,
+  schema,
+  body,
+  options,
+  outputContext,
+  input,
+  verbose = false,
+}: ExecuteScrapeOptions): Promise<void> {
   const client = createDecodoClient(token, schema);
   const startedAt = Date.now();
   const response = await client.webScrapingApi.scrape(
@@ -69,15 +69,15 @@ export function createTargetAction(
       const body = resolveBody(input, options);
       verboseLog(verbose, formatScrapeRequestLog(body));
       const outputContext = getOutputContext?.(input, options);
-      await executeScrape(
-        auth.token,
+      await executeScrape({
+        token: auth.token,
         schema,
         body,
         options,
         outputContext,
         input,
-        verbose
-      );
+        verbose,
+      });
     } catch (err) {
       handleCliError(err, { fallbackMessage: "Scrape failed." });
     }
