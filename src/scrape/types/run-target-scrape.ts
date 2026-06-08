@@ -1,12 +1,11 @@
-import type { SyncResponse } from "@decodo/sdk-ts";
+import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 
 export type ScrapeBodyBuilder = (
   input: string | undefined,
   options: Record<string, unknown>
 ) => Record<string, unknown>;
 
-export type ScrapeResponseHandler = (
-  response: SyncResponse,
-  options: Record<string, unknown>,
-  input?: string
-) => void | Promise<void>;
+export type OutputContextBuilder = (
+  input: string | undefined,
+  options: Record<string, unknown>
+) => Partial<WriteScrapeResponseContext>;
