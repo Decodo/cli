@@ -85,7 +85,10 @@ export async function executeScrape(
       const result = await client.webScrapingApi.scrape(
         body as unknown as ScrapeRequest
       );
-      verboseLog(verbose, `response latency_ms=${Date.now() - attemptStartedAt}`);
+      verboseLog(
+        verbose,
+        `response latency_ms=${Date.now() - attemptStartedAt}`
+      );
       return result;
     },
     {

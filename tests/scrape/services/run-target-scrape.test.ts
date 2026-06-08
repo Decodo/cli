@@ -181,7 +181,9 @@ describe("createTargetAction", () => {
     await parsePromise;
 
     expect(stderr).toContain("[verbose] auth source=flag\n");
-    expect(stderr).toContain("[verbose] request target=google_search query=coffee\n");
+    expect(stderr).toContain(
+      "[verbose] request target=google_search query=coffee\n"
+    );
     expect(stderr).toContain("[verbose] retry attempt=1\n");
     expect(stderr).toMatch(RESPONSE_LATENCY_LOG_PATTERN);
     expect(stderr).not.toContain("test-token");
