@@ -3,9 +3,9 @@ import type { Command } from "commander";
 export const DEFAULT_MAX_RETRIES = 3;
 
 export interface RootOptions {
-  token?: string;
-  timeout?: number;
   maxRetries?: number;
+  timeout?: number;
+  token?: string;
 }
 
 export function getRootOpts(command: Command): RootOptions {

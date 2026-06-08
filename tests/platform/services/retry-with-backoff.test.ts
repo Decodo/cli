@@ -71,9 +71,9 @@ describe("retryWithBackoff", () => {
     for (const error of nonRetriableErrors) {
       const operation = vi.fn<() => Promise<string>>().mockRejectedValue(error);
 
-      await expect(
-        retryWithBackoff(operation, { maxRetries: 3 })
-      ).rejects.toBe(error);
+      await expect(retryWithBackoff(operation, { maxRetries: 3 })).rejects.toBe(
+        error
+      );
       expect(operation).toHaveBeenCalledTimes(1);
     }
   });
