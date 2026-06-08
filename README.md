@@ -2,42 +2,21 @@
 
 Official command-line interface for the Decodo APIs.
 
-## Development setup (temporary)
-
-Until `@decodo/sdk-ts` is published to npm, the CLI depends on a **sibling checkout** of [Decodo/sdk-ts](https://github.com/Decodo/sdk-ts). CI does the same thing.
+## Development setup
 
 ### Prerequisites
 
 - Node.js 18+ (24 recommended)
 - [pnpm](https://pnpm.io/) 10.x (`corepack enable` if needed)
 
-### Repo layout
-
-Clone both repos next to each other:
-
-```text
-your-workspace/
-  cli/      # this repo
-  sdk-ts/   # https://github.com/Decodo/sdk-ts
-```
-
 ### Install and build
 
 ```bash
-cd cli
 pnpm install
 pnpm build
 ```
 
-`pnpm build` and `pnpm test` build `../sdk-ts` automatically via `prebuild` / `pretest`. If you only change the SDK, rebuild it once:
-
-```bash
-pnpm run build:sdk-ts
-```
-
 ### Run locally
-
-From `cli/`:
 
 ```bash
 node build/esm/index.js --help
