@@ -86,7 +86,7 @@ describe("createScrapeCommand", () => {
     expect(stdout).toBe(`${JSON.stringify(response)}\n`);
   });
 
-  it("maps validation errors to usage exit code", async () => {
+  it("maps validation errors to validation exit code", async () => {
     const scrape = vi
       .fn()
       .mockRejectedValue(new ValidationError("invalid params"));
@@ -103,9 +103,9 @@ describe("createScrapeCommand", () => {
         ["scrape", "https://example.com", "--token", "test-token"],
         { from: "user" }
       )
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 
   it("maps --country to geo and parses headers JSON", async () => {
@@ -143,7 +143,7 @@ describe("createScrapeCommand", () => {
     });
   });
 
-  it("maps unknown target to usage exit code", async () => {
+  it("maps unknown target to validation exit code", async () => {
     const program = new Command()
       .option("--token <token>")
       .addCommand(createScrapeCommand(BundledSchema.shared));
@@ -160,8 +160,8 @@ describe("createScrapeCommand", () => {
         ],
         { from: "user" }
       )
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 });

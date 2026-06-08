@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { EXIT } from "../constants.js";
+import { CliUsageError, handleCliError } from "./handle-cli-error.js";
 import { resolveOutputFilePath } from "./resolve-output-file.js";
 
 export const BINARY_TTY_ERROR =
@@ -21,8 +21,7 @@ export function writeBinaryOutput(
   }
 
   if (process.stdout.isTTY) {
-    console.error(`Error: ${BINARY_TTY_ERROR}`);
-    process.exit(EXIT.USAGE);
+    handleCliError(new CliUsageError(BINARY_TTY_ERROR));
   }
 
   process.stdout.write(bytes);

@@ -1,50 +1,17 @@
-import {
-  AuthenticationError,
-  DecodoError,
-  type DecodoSchema,
-  type ScrapeRequest,
-  ValidationError,
-} from "@decodo/sdk-ts";
+import type { DecodoSchema, ScrapeRequest } from "@decodo/sdk-ts";
 import type { Command } from "commander";
-import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { getRootOpts } from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
-import { EXIT } from "../../platform/constants.js";
+import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import type {
   OutputContextBuilder,
   ScrapeBodyBuilder,
 } from "../types/run-target-scrape.js";
 import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
-
-export function handleScrapeError(err: unknown): never {
-  if (err instanceof Error && err.message.startsWith("process.exit:")) {
-    throw err;
-  }
-
-  if (err instanceof AuthenticationError) {
-    console.error(`Error: ${err.message}`);
-    process.exit(EXIT.AUTH);
-  }
-
-  if (err instanceof ValidationError) {
-    console.error(`Error: ${err.message}`);
-    process.exit(EXIT.USAGE);
-  }
-
-  if (err instanceof DecodoError) {
-    console.error(`Error: ${err.message}`);
-    process.exit(EXIT.ERROR);
-  }
-
-  console.error(
-    `Error: ${err instanceof Error ? err.message : "Scrape failed."}`
-  );
-  process.exit(EXIT.ERROR);
-}
 
 export async function executeScrape(
   token: string,
@@ -91,12 +58,7 @@ export function createTargetAction(
       const outputContext = getOutputContext?.(input, options);
       await executeScrape(token, schema, body, options, outputContext, input);
     } catch (err) {
-      if (err instanceof AuthRequiredError) {
-        console.error(err.message);
-        process.exit(EXIT.AUTH);
-      }
-
-      handleScrapeError(err);
+      handleCliError(err, { fallbackMessage: "Scrape failed." });
     }
   };
 }

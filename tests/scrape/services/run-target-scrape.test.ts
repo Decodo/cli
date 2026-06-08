@@ -74,7 +74,7 @@ describe("createTargetAction", () => {
     expect(stdout).toBe('{"ok":true}\n');
   });
 
-  it("maps requireAuthToken failures through handleScrapeError", async () => {
+  it("maps requireAuthToken failures through handleCliError", async () => {
     vi.mocked(requireAuthToken).mockRejectedValue(
       new SyntaxError("Unexpected token in config.json")
     );
@@ -95,7 +95,7 @@ describe("createTargetAction", () => {
     expect(createDecodoClient).not.toHaveBeenCalled();
   });
 
-  it("maps validation errors to usage exit code", async () => {
+  it("maps validation errors to validation exit code", async () => {
     const scrape = vi
       .fn()
       .mockRejectedValue(new ValidationError("invalid params"));
@@ -115,8 +115,8 @@ describe("createTargetAction", () => {
       program.parseAsync(["google-search", "coffee", "--token", "test-token"], {
         from: "user",
       })
-    ).rejects.toThrow("process.exit:2");
+    ).rejects.toThrow("process.exit:4");
 
-    expect(exitCode).toBe(2);
+    expect(exitCode).toBe(4);
   });
 });

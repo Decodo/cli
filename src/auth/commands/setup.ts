@@ -1,8 +1,10 @@
 import { stdin as input, stdout as output } from "node:process";
 import { createInterface } from "node:readline/promises";
-import { AuthenticationError, DecodoError } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { EXIT } from "../../platform/constants.js";
+import {
+  CliUsageError,
+  handleCliError,
+} from "../../platform/services/handle-cli-error.js";
 import { validateAuthToken } from "../../scrape/services/auth-validation.js";
 import { PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";
@@ -35,8 +37,7 @@ export const setupCommand = new Command("setup")
       (await promptForToken());
 
     if (!token) {
-      console.error("Error: auth token is required.");
-      process.exit(EXIT.USAGE);
+      handleCliError(new CliUsageError("auth token is required."));
     }
 
     try {
@@ -44,20 +45,6 @@ export const setupCommand = new Command("setup")
       await writeConfig({ authToken: token });
       console.log(`Setup complete. Configuration saved to ${getConfigPath()}`);
     } catch (err) {
-      if (err instanceof AuthenticationError) {
-        console.error(`Error: ${err.message}`);
-        process.exit(EXIT.AUTH);
-      }
-
-      if (err instanceof DecodoError) {
-        console.error(`Error: ${err.message}`);
-        process.exit(EXIT.ERROR);
-      }
-
-      console.error(
-        `Error: ${err instanceof Error ? err.message : "Setup failed."}`
-      );
-
-      process.exit(EXIT.ERROR);
+      handleCliError(err, { fallbackMessage: "Setup failed." });
     }
   });

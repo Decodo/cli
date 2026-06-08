@@ -140,7 +140,7 @@ describe("setupCommand", () => {
     expect(exitCode).toBe(2);
   });
 
-  it("does not save config on non-auth API error", async () => {
+  it("maps 429 API errors to the rate-limit exit code", async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 429,
@@ -151,12 +151,12 @@ describe("setupCommand", () => {
     } as Response);
 
     await expect(runSetup(["--token", "valid-token"])).rejects.toThrow(
-      "process.exit:1"
+      "process.exit:5"
     );
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toBeUndefined();
-    expect(exitCode).toBe(1);
+    expect(exitCode).toBe(5);
     expect(stderr.join("\n")).toContain("Rate limit exceeded");
   });
 
