@@ -2,6 +2,12 @@
 
 Official command-line interface for the Decodo APIs.
 
+## IDE one-click install
+
+[![Add Decodo CLI (npx)](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=Decodo%20CLI&config=eyJkZWNvZG8iOnsiY29tbWFuZCI6Im5weCIsImFyZ3MiOlsiLXkiLCJAZGVjb2RvL2NsaSJdfX0=)
+
+See [docs/ide-deeplinks.md](docs/ide-deeplinks.md) for Cursor, Windsurf, Continue, and agent setup.
+
 ## Development setup (temporary)
 
 Until `@decodo/sdk-ts` is published to npm, the CLI depends on a **sibling checkout** of [Decodo/sdk-ts](https://github.com/Decodo/sdk-ts). CI does the same thing.
