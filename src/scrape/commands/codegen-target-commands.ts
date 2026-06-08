@@ -2,6 +2,7 @@ import type { DecodoSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { configureTargetCommand } from "../services/command-builder.js";
 import { snakeToKebab } from "../services/naming.js";
+import { resolveTargetGroup } from "../services/resolve-target-group.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 
 export function createCodegenTargetCommands(schema: DecodoSchema): Command[] {
@@ -9,9 +10,9 @@ export function createCodegenTargetCommands(schema: DecodoSchema): Command[] {
 
   for (const target of schema.listTargets()) {
     const commandName = snakeToKebab(target);
-    const meta = schema.getTargetMeta(target);
+    const group = resolveTargetGroup(schema, target);
     const command = new Command(commandName).description(
-      meta?.group ? `${meta.group} scrape target` : `${target} scrape target`
+      `${group} scrape target`
     );
 
     configureTargetCommand(command, target, schema);
