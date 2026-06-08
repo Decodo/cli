@@ -107,13 +107,7 @@ describe("createTargetAction", () => {
       );
 
     await program.parseAsync(
-      [
-        "google-search",
-        "coffee",
-        "--token",
-        "test-token",
-        "--verbose",
-      ],
+      ["google-search", "coffee", "--token", "test-token", "--verbose"],
       { from: "user" }
     );
 
