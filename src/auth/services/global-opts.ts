@@ -1,10 +1,6 @@
 import type { Command } from "commander";
 
-export const DEFAULT_MAX_RETRIES = 3;
-
 export interface RootOptions {
-  maxRetries?: number;
-  timeout?: number;
   token?: string;
   verbose?: boolean;
 }

@@ -1,16 +1,12 @@
 import type { DecodoSchema, ScrapeRequest } from "@decodo/sdk-ts";
 import type { Command } from "commander";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
-import {
-  DEFAULT_MAX_RETRIES,
-  getRootOpts,
-} from "../../auth/services/global-opts.js";
+import { getRootOpts } from "../../auth/services/global-opts.js";
 import { resolveAuthToken } from "../../auth/services/resolve-token.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
-import { retryWithBackoff } from "../../platform/services/retry-with-backoff.js";
 import type {
   OutputContextBuilder,
   ScrapeBodyBuilder,
@@ -71,33 +67,16 @@ export async function executeScrape(
   schema: DecodoSchema,
   body: Record<string, unknown>,
   options: Record<string, unknown>,
-  timeoutMs?: number,
-  maxRetries = DEFAULT_MAX_RETRIES,
   outputContext?: Partial<WriteScrapeResponseContext>,
   input?: string,
   verbose = false
 ): Promise<void> {
-  const client = createDecodoClient(token, schema, timeoutMs);
-  let attemptStartedAt = 0;
-  const response = await retryWithBackoff(
-    async () => {
-      attemptStartedAt = Date.now();
-      const result = await client.webScrapingApi.scrape(
-        body as unknown as ScrapeRequest
-      );
-      verboseLog(
-        verbose,
-        `response latency_ms=${Date.now() - attemptStartedAt}`
-      );
-      return result;
-    },
-    {
-      maxRetries,
-      onRetry: (attempt) => {
-        verboseLog(verbose, `retry attempt=${attempt}`);
-      },
-    }
+  const client = createDecodoClient(token, schema);
+  const startedAt = Date.now();
+  const response = await client.webScrapingApi.scrape(
+    body as unknown as ScrapeRequest
   );
+  verboseLog(verbose, `response latency_ms=${Date.now() - startedAt}`);
 
   writeScrapeResponse(response, {
     options: options as OutputOptions,
@@ -141,8 +120,6 @@ export function createTargetAction(
         schema,
         body,
         options,
-        rootOpts.timeout,
-        rootOpts.maxRetries ?? DEFAULT_MAX_RETRIES,
         outputContext,
         input,
         verbose

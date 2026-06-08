@@ -1,4 +1,4 @@
-import { BundledSchema, RateLimitError, ValidationError } from "@decodo/sdk-ts";
+import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
@@ -51,7 +51,6 @@ describe("createTargetAction", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -85,69 +84,15 @@ describe("createTargetAction", () => {
     });
     expect(createDecodoClient).toHaveBeenCalledWith(
       "test-token",
-      BundledSchema.shared,
-      undefined
+      BundledSchema.shared
     );
     expect(stdout).toBe('{"ok":true}\n');
   });
 
-  it("passes timeout and max-retries from root options", async () => {
-    vi.useFakeTimers();
-
-    const scrape = vi
-      .fn()
-      .mockRejectedValueOnce(new RateLimitError("Rate limit exceeded"))
-      .mockResolvedValue({ results: [{ content: { ok: true } }] });
-    vi.mocked(createDecodoClient).mockReturnValue({
-      webScrapingApi: { scrape },
-    } as never);
-
-    const program = new Command()
-      .option("--token <token>")
-      .option("--timeout <ms>", "request timeout", (value) =>
-        Number.parseInt(value, 10)
-      )
-      .option("--max-retries <n>", "retry count", (value) =>
-        Number.parseInt(value, 10)
-      )
-      .addCommand(
-        new Command("google-search")
-          .argument("<input>")
-          .action(createTargetAction("google_search", BundledSchema.shared))
-      );
-
-    const parsePromise = program.parseAsync(
-      [
-        "google-search",
-        "coffee",
-        "--token",
-        "test-token",
-        "--timeout",
-        "2500",
-        "--max-retries",
-        "1",
-      ],
-      { from: "user" }
-    );
-
-    await vi.advanceTimersByTimeAsync(1000);
-    await parsePromise;
-
-    expect(createDecodoClient).toHaveBeenCalledWith(
-      "test-token",
-      BundledSchema.shared,
-      2500
-    );
-    expect(scrape).toHaveBeenCalledTimes(2);
-  });
-
   it("prints verbose logs to stderr when --verbose is set", async () => {
-    vi.useFakeTimers();
-
-    const scrape = vi
-      .fn()
-      .mockRejectedValueOnce(new RateLimitError("Rate limit exceeded"))
-      .mockResolvedValue({ results: [{ content: { ok: true } }] });
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: { ok: true } }],
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
       webScrapingApi: { scrape },
     } as never);
@@ -155,36 +100,27 @@ describe("createTargetAction", () => {
     const program = new Command()
       .option("--token <token>")
       .option("-v, --verbose")
-      .option("--max-retries <n>", "retry count", (value) =>
-        Number.parseInt(value, 10)
-      )
       .addCommand(
         new Command("google-search")
           .argument("<input>")
           .action(createTargetAction("google_search", BundledSchema.shared))
       );
 
-    const parsePromise = program.parseAsync(
+    await program.parseAsync(
       [
         "google-search",
         "coffee",
         "--token",
         "test-token",
         "--verbose",
-        "--max-retries",
-        "1",
       ],
       { from: "user" }
     );
-
-    await vi.advanceTimersByTimeAsync(1000);
-    await parsePromise;
 
     expect(stderr).toContain("[verbose] auth source=flag\n");
     expect(stderr).toContain(
       "[verbose] request target=google_search query=coffee\n"
     );
-    expect(stderr).toContain("[verbose] retry attempt=1\n");
     expect(stderr).toMatch(RESPONSE_LATENCY_LOG_PATTERN);
     expect(stderr).not.toContain("test-token");
   });
