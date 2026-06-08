@@ -9,6 +9,8 @@ import type { Command } from "commander";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { getRootOpts } from "../../auth/services/global-opts.js";
 import { requireAuthToken } from "../../auth/services/resolve-token.js";
+import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
+import type { OutputOptions } from "../../output/types/output-options.js";
 import { EXIT } from "../../platform/constants.js";
 import type {
   ScrapeBodyBuilder,
@@ -59,7 +61,9 @@ export async function executeScrape(
   if (onResponse) {
     await onResponse(response, options, input);
   } else {
-    console.log(JSON.stringify(response, null, 2));
+    writeScrapeResponse(response, {
+      options: options as OutputOptions,
+    });
   }
 }
 
@@ -72,7 +76,8 @@ export function createTargetAction(
   const config = getTargetCommandConfig(target, schema);
   const resolveBody =
     buildBody ??
-    ((input, options) => buildScrapeBody(target, input, options, config));
+    ((input, options) =>
+      buildScrapeBody(target, input, options, config, schema));
 
   return async (
     input: string | undefined,

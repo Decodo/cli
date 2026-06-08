@@ -1,5 +1,7 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command, Option } from "commander";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
+import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { SearchOptions } from "../types/search-command.js";
@@ -46,7 +48,7 @@ function resolveSearchTarget(
 }
 
 export function createSearchCommand(schema: DecodoSchema): Command {
-  return new Command("search")
+  const command = new Command("search")
     .description(
       "Search the web (default: Google). Use decodo google-search or decodo bing-search for full options."
     )
@@ -58,29 +60,34 @@ export function createSearchCommand(schema: DecodoSchema): Command {
     )
     .option("--geo <code>", "Geo / country code")
     .option("--limit <n>", "Number of result pages", parseLimit)
-    .option("--target <name>", "Scrape target override")
-    .action(
-      createTargetAction(Target.GoogleSearch, schema, (query, options) => {
-        if (query === undefined) {
-          throw new Error("Missing required query.");
-        }
+    .option("--target <name>", "Scrape target override");
 
-        const opts = options as SearchOptions;
-        const body: Record<string, unknown> = {
-          target: resolveSearchTarget(opts, schema),
-          query,
-        };
+  attachScrapeOutputOptions(command);
 
-        if (opts.geo !== undefined) {
-          body.geo = opts.geo;
-        }
+  return command.action(
+    createTargetAction(Target.GoogleSearch, schema, (query, options) => {
+      if (query === undefined) {
+        throw new Error("Missing required query.");
+      }
 
-        if (opts.limit !== undefined) {
-          validatePageCount(opts.limit);
-          body.page_count = opts.limit;
-        }
+      const opts = options as SearchOptions;
+      const body: Record<string, unknown> = {
+        target: resolveSearchTarget(opts, schema),
+        query,
+      };
 
-        return body;
-      })
-    );
+      if (opts.geo !== undefined) {
+        body.geo = opts.geo;
+      }
+
+      if (opts.limit !== undefined) {
+        validatePageCount(opts.limit);
+        body.page_count = opts.limit;
+      }
+
+      applyRequestDefaults(body, body.target as string, schema);
+
+      return body;
+    })
+  );
 }

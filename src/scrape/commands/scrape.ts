@@ -1,5 +1,8 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
+import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
+import type { OutputOptions } from "../../output/types/output-options.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { ScrapeOptions } from "../types/scrape-command.js";
@@ -25,36 +28,45 @@ function parseHeadersJson(json: string): Record<string, unknown> {
 }
 
 export function createScrapeCommand(schema: DecodoSchema): Command {
-  return new Command("scrape")
+  const command = new Command("scrape")
     .description(
-      "Scrape a URL (universal target, markdown). Use decodo universal or decodo <target> for full options."
+      "Scrape a URL with the universal target (markdown by default). Use decodo universal for --markdown, --parse, and other API flags."
     )
     .argument("<url>", "URL to scrape")
     .option("--country <code>", "Geo / country code (maps to geo)")
     .option("--headers <json>", "Request headers as a JSON object string")
-    .option("--target <name>", "Scrape target override (default: universal)")
-    .action(
-      createTargetAction(Target.Universal, schema, (url, options) => {
-        if (url === undefined) {
-          throw new Error("Missing required URL.");
-        }
+    .option("--target <name>", "Scrape target override (default: universal)");
 
-        const opts = options as ScrapeOptions;
-        const body: Record<string, unknown> = {
-          target: resolveTarget(opts.target, schema, Target.Universal),
-          url,
-          markdown: true,
-        };
+  attachScrapeOutputOptions(command);
 
-        if (opts.country !== undefined) {
-          body.geo = opts.country;
-        }
+  return command.action(
+    createTargetAction(Target.Universal, schema, (url, options) => {
+      if (url === undefined) {
+        throw new Error("Missing required URL.");
+      }
 
-        if (opts.headers !== undefined) {
-          body.headers = parseHeadersJson(opts.headers);
-        }
+      const opts = options as ScrapeOptions & OutputOptions;
+      const resolvedTarget = resolveTarget(
+        opts.target,
+        schema,
+        Target.Universal
+      );
+      const body: Record<string, unknown> = {
+        target: resolvedTarget,
+        url,
+      };
 
-        return body;
-      })
-    );
+      applyRequestDefaults(body, resolvedTarget, schema);
+
+      if (opts.country !== undefined) {
+        body.geo = opts.country;
+      }
+
+      if (opts.headers !== undefined) {
+        body.headers = parseHeadersJson(opts.headers);
+      }
+
+      return body;
+    })
+  );
 }

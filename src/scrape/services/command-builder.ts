@@ -1,6 +1,8 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
 import { type Command, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
+import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
+import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
 import type { TargetCommandConfig } from "../types/target-command.js";
 import { snakeToCamel, snakeToKebab } from "./naming.js";
 import { getPrimaryInputField } from "./primary-input.js";
@@ -91,6 +93,8 @@ export function configureTargetCommand(
     addPropertyOption(command, field, propertySchema);
   }
 
+  attachScrapeOutputOptions(command);
+
   return { target, primaryField, optionFields };
 }
 
@@ -98,7 +102,8 @@ export function buildScrapeBody(
   target: string,
   input: string | undefined,
   options: Record<string, unknown>,
-  config: TargetCommandConfig
+  config: TargetCommandConfig,
+  schema: DecodoSchema
 ): Record<string, unknown> {
   const body: Record<string, unknown> = { target };
 
@@ -115,6 +120,8 @@ export function buildScrapeBody(
       body[field] = value;
     }
   }
+
+  applyRequestDefaults(body, target, schema);
 
   return body;
 }

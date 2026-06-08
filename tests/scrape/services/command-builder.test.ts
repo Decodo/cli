@@ -58,7 +58,8 @@ describe("buildScrapeBody", () => {
         [snakeToCamel("page_from")]: 2,
         parse: true,
       },
-      config
+      config,
+      schema
     );
 
     expect(body).toEqual({
@@ -66,6 +67,45 @@ describe("buildScrapeBody", () => {
       query: "coffee",
       page_from: 2,
       parse: true,
+      markdown: false,
+    });
+  });
+
+  it("sets parse defaults when schema has parse and flags are omitted", () => {
+    const config = configureTargetCommand(
+      new Command("google-search"),
+      "google_search",
+      schema
+    );
+    const body = buildScrapeBody("google_search", "coffee", {}, config, schema);
+
+    expect(body).toEqual({
+      target: "google_search",
+      query: "coffee",
+      parse: true,
+      markdown: false,
+    });
+  });
+
+  it("does not override explicit parse: false from options", () => {
+    const config = configureTargetCommand(
+      new Command("google-search"),
+      "google_search",
+      schema
+    );
+    const body = buildScrapeBody(
+      "google_search",
+      "coffee",
+      { parse: false },
+      config,
+      schema
+    );
+
+    expect(body).toEqual({
+      target: "google_search",
+      query: "coffee",
+      parse: false,
+      markdown: false,
     });
   });
 });
