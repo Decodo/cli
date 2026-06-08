@@ -1,8 +1,9 @@
 import type { DecodoSchema, ScrapeRequest } from "@decodo/sdk-ts";
 import type { Command } from "commander";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
-import { getRootOpts } from "../../auth/services/global-opts.js";
 import { resolveAuthToken } from "../../auth/services/resolve-token.js";
+import { getRootOpts } from "../../cli/services/global-opts.js";
+import { verboseLog } from "../../cli/services/verbose-log.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
@@ -13,54 +14,7 @@ import type {
 } from "../types/run-target-scrape.js";
 import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
-
-const SENSITIVE_QUERY_PARAM_KEYS = new Set([
-  "auth",
-  "authorization",
-  "apikey",
-  "api_key",
-  "key",
-  "password",
-  "secret",
-  "token",
-]);
-
-function verboseLog(enabled: boolean, message: string): void {
-  if (!enabled) {
-    return;
-  }
-
-  process.stderr.write(`[verbose] ${message}\n`);
-}
-
-function sanitizeUrlForLog(value: string): string {
-  try {
-    const parsed = new URL(value);
-    for (const key of parsed.searchParams.keys()) {
-      if (SENSITIVE_QUERY_PARAM_KEYS.has(key.toLowerCase())) {
-        parsed.searchParams.set(key, "<redacted>");
-      }
-    }
-    return parsed.toString();
-  } catch {
-    return value;
-  }
-}
-
-function formatRequestLog(body: Record<string, unknown>): string {
-  const target = typeof body.target === "string" ? body.target : "unknown";
-  const url = typeof body.url === "string" ? sanitizeUrlForLog(body.url) : null;
-  if (url !== null) {
-    return `request target=${target} url=${url}`;
-  }
-
-  const query = typeof body.query === "string" ? body.query : null;
-  if (query !== null) {
-    return `request target=${target} query=${query}`;
-  }
-
-  return `request target=${target}`;
-}
+import { formatScrapeRequestLog } from "./format-scrape-request-log.js";
 
 export async function executeScrape(
   token: string,
@@ -113,7 +67,7 @@ export function createTargetAction(
       }
 
       const body = resolveBody(input, options);
-      verboseLog(verbose, formatRequestLog(body));
+      verboseLog(verbose, formatScrapeRequestLog(body));
       const outputContext = getOutputContext?.(input, options);
       await executeScrape(
         auth.token,

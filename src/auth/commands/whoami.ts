@@ -1,7 +1,7 @@
 import { Command } from "commander";
+import { getRootOpts } from "../../cli/services/global-opts.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import { AuthRequiredError } from "../errors/auth-required-error.js";
-import { getRootOpts } from "../services/global-opts.js";
 import { mask } from "../services/mask.js";
 import { resolveAuthToken } from "../services/resolve-token.js";
 

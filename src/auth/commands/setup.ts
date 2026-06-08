@@ -1,6 +1,7 @@
 import { stdin as input, stdout as output } from "node:process";
 import { createInterface } from "node:readline/promises";
 import { Command } from "commander";
+import { getRootOpts } from "../../cli/services/global-opts.js";
 import {
   CliUsageError,
   handleCliError,
@@ -8,7 +9,6 @@ import {
 import { validateAuthToken } from "../../scrape/services/auth-validation.js";
 import { PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";
-import { getRootOpts } from "../services/global-opts.js";
 
 const TOKEN_PROMPT = `Paste your Web Scraping API basic auth token (${PLAYGROUND_URL}): `;
 
