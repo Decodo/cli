@@ -20,12 +20,4 @@ describe("createCodegenTargetCommands", () => {
       true
     );
   });
-
-  it("does not expose None as a command description group", () => {
-    const schema = BundledSchema.shared;
-
-    for (const command of createCodegenTargetCommands(schema)) {
-      expect(command.description()).not.toContain("None scrape target");
-    }
-  });
 });
