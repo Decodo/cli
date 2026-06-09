@@ -1,6 +1,6 @@
 {
   "name": "@decodo/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Official CLI for the Decodo APIs",
   "license": "MIT",
   "type": "module",
