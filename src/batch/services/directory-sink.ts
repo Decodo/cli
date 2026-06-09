@@ -4,25 +4,10 @@ import type { BatchResult } from "../types/batch-result.js";
 import type { BatchSink } from "../types/batch-sink.js";
 import { batchItemFilename } from "./batch-item-filename.js";
 import { toBatchRecord } from "./batch-record.js";
+import { uniqueName } from "./unique-name.js";
 
 export interface DirectorySinkOptions {
   pretty?: boolean;
-}
-
-function uniqueName(base: string, used: Set<string>): string {
-  if (!used.has(base)) {
-    used.add(base);
-    return base;
-  }
-
-  let suffix = 2;
-  let candidate = `${base}-${suffix}`;
-  while (used.has(candidate)) {
-    suffix++;
-    candidate = `${base}-${suffix}`;
-  }
-  used.add(candidate);
-  return candidate;
 }
 
 /**

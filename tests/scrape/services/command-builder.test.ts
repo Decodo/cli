@@ -10,13 +10,14 @@ import { snakeToCamel } from "../../../src/scrape/services/naming.js";
 const schema = BundledSchema.shared;
 
 describe("configureTargetCommand", () => {
-  it("adds a required input argument for google_search", () => {
+  it("adds an optional input argument for google_search", () => {
     const command = new Command("google-search");
     const config = configureTargetCommand(command, "google_search", schema);
 
     expect(config.primaryField).toBe("query");
     expect(command.registeredArguments).toHaveLength(1);
-    expect(command.registeredArguments[0]?.required).toBe(true);
+    // Optional so the input can come from --input-file in batch mode instead.
+    expect(command.registeredArguments[0]?.required).toBe(false);
     expect(command.options.some((opt) => opt.long?.includes("headless"))).toBe(
       true
     );

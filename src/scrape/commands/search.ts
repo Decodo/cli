@@ -1,7 +1,9 @@
 import { type DecodoSchema, Target, ValidationError } from "@decodo/sdk-ts";
 import { Command, Option } from "commander";
+import { attachBatchOptions } from "../../batch/commands/attach-batch-options.js";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
+import { CliUsageError } from "../../platform/services/handle-cli-error.js";
 import { resolveTarget } from "../services/resolve-target.js";
 import { createTargetAction } from "../services/run-target-scrape.js";
 import type { SearchOptions } from "../types/search-command.js";
@@ -52,7 +54,7 @@ export function createSearchCommand(schema: DecodoSchema): Command {
     .description(
       "Search the web (default: Google). Use decodo google-search or decodo bing-search for full options."
     )
-    .argument("<query>", "Search query")
+    .argument("[query]", "Search query (omit when using --input-file)")
     .addOption(
       new Option("--engine <engine>", "Search engine")
         .choices(["google", "bing"])
@@ -63,11 +65,12 @@ export function createSearchCommand(schema: DecodoSchema): Command {
     .option("--target <name>", "Scrape target override");
 
   attachScrapeOutputOptions(command);
+  attachBatchOptions(command);
 
   return command.action(
     createTargetAction(Target.GoogleSearch, schema, (query, options) => {
       if (query === undefined) {
-        throw new Error("Missing required query.");
+        throw new CliUsageError("Missing required query.");
       }
 
       const opts = options as SearchOptions;
