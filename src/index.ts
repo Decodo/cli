@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { createCommands } from "./cli/register.js";
+import { configureCommanderExit } from "./cli/services/configure-commander-exit.js";
 import { handleCliError } from "./platform/services/handle-cli-error.js";
 
 function readVersion(): string {
@@ -30,6 +31,8 @@ async function main(): Promise<void> {
   for (const command of await createCommands()) {
     program.addCommand(command);
   }
+
+  configureCommanderExit(program);
 
   await program.parseAsync(process.argv);
 }
