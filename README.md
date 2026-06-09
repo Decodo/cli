@@ -2,8 +2,6 @@
 
 Official command-line interface for the [Decodo](https://decodo.com) Web Scraping API.
 
-`decodo` is the primary command name. `dcd` is a shorthand alias for the same binary.
-
 ## Quickstart
 
 ```bash
