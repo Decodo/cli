@@ -1,17 +1,89 @@
-# @decodo/cli
+# Decodo CLI
 
-Official command-line interface for the [Decodo](https://decodo.com) Web Scraping API.
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/Ja8dqKgvbZ)](https://discord.gg/Ja8dqKgvbZ)
+[![npm version](https://img.shields.io/npm/v/@decodo/cli)](https://www.npmjs.com/package/@decodo/cli)
 
-## Quickstart
+<p align="center">
+<a href="https://dashboard.decodo.com/integrations?utm_source=github&utm_medium=social&utm_campaign=cli"> <img src="https://github.com/user-attachments/assets/a1e52a9e-3da1-4081-b3c6-053aafb8f196"/></a>
+</p>
+
+Scrape websites, search engines, eCommerce platforms, and social media from your terminal or shell
+scripts. The Decodo CLI connects you to the [Decodo Web Scraping API](https://decodo.com) without
+building proxy rotation, parsers, or retry logic from scratch.
+
+- Structured outputs in JSON, Markdown, NDJSON, and screenshots
+- Server-side JavaScript rendering and anti-bot handling
+- 125M+ IPs across 195+ locations
+- Pipe-friendly for `jq`, CI, and coding agents
+
+## What is the Decodo CLI?
+
+The Decodo CLI is a command-line interface for the Decodo Web Scraping API. It wraps every API
+target as a subcommand and adds shell-native output modes for scripting, automation, and agent
+workflows.
+
+Instead of maintaining scraping infrastructure, you get a single binary for reliable web data access
+from the terminal.
+
+## Why use the CLI?
+
+Use the CLI when you need web scraping outside an IDE or MCP client:
+
+- **Scripts and CI** — run scrapes in pipelines, cron jobs, and GitHub Actions
+- **Shell pipelines** — pipe results to `jq`, `grep`, or custom tools
+- **Coding agents** — invoke scraping as a subprocess (Cursor, Claude Code, Codex, Windsurf)
+- **Quick terminal access** — one command to scrape, search, or screenshot
+
+For MCP-based scraping inside an IDE, see the [Decodo MCP server](https://github.com/Decodo/mcp-server).
+The CLI is the right tool when you need direct shell access or scripting.
+
+## Key features
+
+**Web scraping from the terminal, no infrastructure required.** Scrape any website, including
+JavaScript-heavy pages, without handling proxy rotation, CAPTCHA solving, or anti-bot systems.
+
+**Structured outputs for automation.** Markdown (human-readable), JSON and NDJSON (pipe-friendly),
+and PNG screenshots — built for scripts, data pipelines, and agent subprocess calls.
+
+**Built-in support for popular targets.** Tier-1 commands for scrape, search, and screenshot, plus
+schema-driven subcommands for Google and Bing, Amazon, Walmart, and Target, Reddit, TikTok, and
+YouTube, and more. Run `decodo targets` to list everything available.
+
+**Global proxy infrastructure.** 125M+ residential IPs, 195+ geo-locations, and a 99.99% success
+rate on even the most protected targets — all via the Decodo API.
+
+**Pipe-friendly by design.** Compact JSON when piped, human-readable output in a TTY, and explicit
+exit codes for auth, validation, rate limits, and API errors.
+
+**Fast time to value.** From API token to first scrape in minutes — install with one command or
+use `npx` with zero setup.
+
+## Use cases
+
+Use the Decodo CLI when you need web scraping from the shell, structured data extraction in
+automation, reliable access to dynamic websites, or an alternative to building scraping
+infrastructure from scratch. Common scenarios:
+
+- **Shell scripts and CI** — scrape or search in pipelines without embedding SDK logic
+- **Data pipelines** — stream NDJSON results into `jq`, databases, or downstream tools
+- **Coding agent subprocesses** — let agents call `decodo search` or `decodo scrape` directly
+- **eCommerce intelligence** — query Amazon, Walmart, and Target targets from the terminal
+- **Social media data collection** — gather posts and metadata from Reddit, TikTok, and YouTube
+- **Quick research** — search the web or capture screenshots without leaving the terminal
+
+## Quick start
+
+1. **Create a free account** at [dashboard.decodo.com](https://dashboard.decodo.com/) — up to 2K
+   free requests, no credit card required.
+2. **Get your API key.** Obtain a Web Scraping API basic authentication token from the
+   [playground](https://dashboard.decodo.com/playground).
+3. **Install Node.js 18+** from [nodejs.org](https://nodejs.org/) (required for npm/npx installs).
+4. **Install the CLI** (pick one method below).
+5. **Configure auth** and run your first scrape:
 
 ```bash
-# Install (pick one method below), then configure auth
 decodo setup
-
-# Scrape a page
 decodo scrape https://ip.decodo.com
-
-# Search the web
 decodo search "decodo scraping api"
 ```
 
@@ -44,8 +116,6 @@ npx @decodo/cli --version
 npx @decodo/cli scrape https://ip.decodo.com --token "$DECODO_AUTH_TOKEN"
 ```
 
-IDE one-click install: see [docs/ide-deeplinks.md](docs/ide-deeplinks.md) (added in a follow-up PR).
-
 ## Authentication
 
 Get a Basic auth token from the [Decodo playground](https://dashboard.decodo.com/playground).
@@ -67,6 +137,18 @@ decodo whoami --token 'your-token'
 decodo whoami   # shows token source (flag / env / config)
 decodo reset    # clear saved config
 ```
+
+## Test your setup
+
+Once installed and authenticated, try:
+
+```bash
+decodo scrape https://ip.decodo.com
+decodo search "top articles hacker news" --limit 5 --parse
+```
+
+You should see markdown or parsed JSON within seconds. If you see an auth error, double-check your
+token from the dashboard.
 
 ## Commands
 
@@ -119,7 +201,9 @@ decodo google-search "query" --full --pretty
 decodo google-search "query" --format ndjson --full | jq -c '.results[]'
 ```
 
-## Pipe-friendly examples
+## Examples
+
+### Pipe-friendly workflows
 
 ```bash
 # Search and extract titles
@@ -131,6 +215,17 @@ decodo scrape https://ip.decodo.com/json | jq '.ip'
 # Screenshot to file, then open
 decodo screenshot https://example.com -o shot.png
 ```
+
+### Scraping geo-restricted content
+
+```bash
+# Request from a specific country
+decodo scrape https://example.com --country us
+decodo search "shoes" --geo de --parse
+decodo google-search "shoes" --geo de --parse
+```
+
+Use `decodo <target> --help` for all geo, locale, and target-specific options from the API schema.
 
 ## Agent tooling
 
@@ -154,8 +249,6 @@ decodo scrape https://example.com --full --format ndjson
 3. Use `decodo targets` to discover available target commands.
 4. Use `decodo <target> --help` for schema-accurate flags.
 5. Check exit codes (below) to distinguish auth, usage, and API errors.
-
-For MCP-based scraping inside an IDE, see the [Decodo MCP server](https://github.com/Decodo/mcp-server). The CLI is the right tool when agents need direct shell access or scripting.
 
 ## Environment variables
 
@@ -197,6 +290,8 @@ Use `-o shot.png` or redirect: `decodo screenshot <url> > shot.png`.
 
 ## Development
 
+<details>
+
 ### Prerequisites
 
 - Node.js 18+ (24 recommended)
@@ -205,6 +300,8 @@ Use `-o shot.png` or redirect: `decodo screenshot <url> > shot.png`.
 ### Install and build
 
 ```bash
+git clone https://github.com/Decodo/cli
+cd cli
 pnpm install
 pnpm build
 ```
@@ -223,3 +320,22 @@ pnpm lint
 pnpm typecheck
 pnpm test
 ```
+
+</details>
+
+## Related repositories
+
+[Web Scraping API](https://github.com/Decodo/Web-Scraping-API),
+[Decodo MCP server](https://github.com/Decodo/mcp-server),
+[Decodo OpenClaw skill](https://github.com/Decodo/decodo-openclaw-skill)
+
+## Try it
+
+Install the CLI and start scraping from your terminal in minutes.
+
+[Start for free](https://dashboard.decodo.com/) | [Docs](https://help.decodo.com/docs/introduction)
+| [Discord](https://discord.gg/Ja8dqKgvbZ)
+
+## License
+
+All code is released under the [MIT License](https://github.com/Decodo/Decodo/blob/master/LICENSE).
