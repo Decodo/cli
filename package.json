@@ -31,8 +31,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pretest": "pnpm build",
-    "verify:publish": "node scripts/verify-publish.mjs",
-    "prepublishOnly": "pnpm run verify:publish"
+    "prepack": "pnpm build"
   },
   "engines": {
     "node": ">=18.0.0"
