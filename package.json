@@ -16,8 +16,7 @@
     "access": "public"
   },
   "bin": {
-    "decodo": "./build/esm/index.js",
-    "dcd": "./build/esm/index.js"
+    "decodo": "./build/esm/index.js"
   },
   "files": [
     "build"
