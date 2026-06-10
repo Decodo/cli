@@ -8,11 +8,13 @@ import { configureCommanderExit } from "./cli/services/configure-commander-exit.
 import { handleCliError } from "./platform/services/handle-cli-error.js";
 
 function readVersion(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const packageJsonPath = join(dirname(__filename), "..", "..", "package.json");
-  const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
-    version: string;
-  };
+  const pkgPath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "..",
+    "package.json"
+  );
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string };
 
   return pkg.version;
 }

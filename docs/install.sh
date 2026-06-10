@@ -3,7 +3,6 @@ set -e
 
 PACKAGE_NAME="@decodo/cli"
 COMMAND_NAME="decodo"
-COMMAND_ALIAS="dcd"
 MIN_NODE_MAJOR=18
 
 if [ -t 1 ]; then
@@ -106,13 +105,11 @@ main() {
   if command -v "$COMMAND_NAME" >/dev/null 2>&1; then
     installed_version=$("$COMMAND_NAME" --version 2>/dev/null || echo "unknown")
     printf "\n${GREEN}${BOLD}Success!${RESET} ${PACKAGE_NAME} ${installed_version} is installed.\n"
-  elif command -v "$COMMAND_ALIAS" >/dev/null 2>&1; then
-    installed_version=$("$COMMAND_ALIAS" --version 2>/dev/null || echo "unknown")
-    printf "\n${GREEN}${BOLD}Success!${RESET} ${PACKAGE_NAME} ${installed_version} is installed.\n"
   else
     printf "\n${GREEN}${BOLD}Installed!${RESET} You may need to restart your shell or add the npm global bin directory to your PATH.\n"
     if [ -z "$USER_PREFIX_BIN" ]; then
-      npm_bin="$(npm prefix -g 2>/dev/null)/bin" || true
+      npm_prefix=$(npm config get prefix 2>/dev/null) || true
+      npm_bin="${npm_prefix:+$npm_prefix/bin}"
       if [ -n "$npm_bin" ] && ! echo "$PATH" | tr ':' '\n' | grep -qx "$npm_bin"; then
         warn "${npm_bin} is not in your PATH. Add it with:"
         printf "  export PATH=\"%s:\$PATH\"\n\n" "$npm_bin"
@@ -130,7 +127,7 @@ main() {
   printf "Get started:\n"
   printf "  ${BOLD}decodo scrape${RESET} https://ip.decodo.com\n"
   printf "  ${BOLD}decodo search${RESET} \"decodo scraping api\"\n"
-  printf "  ${BOLD}dcd whoami${RESET}            # shorthand alias\n\n"
+  printf "  ${BOLD}decodo whoami${RESET}\n\n"
 }
 
 main
