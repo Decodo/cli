@@ -115,15 +115,12 @@ export function handleCliError(
   }
 
   if (err instanceof AuthRequiredError) {
-    console.error("");
     console.error(
-      "The Decodo CLI is installed and working - it just needs an auth token:"
+      "\nThe Decodo CLI is installed and working - it just needs an auth token:\n" +
+        `  1. Get your Web Scraping API token at ${PLAYGROUND_URL}\n` +
+        "  2. Run `decodo setup` to save it (or set DECODO_AUTH_TOKEN)\n" +
+        "  3. Re-run your command"
     );
-    console.error(`  1. Get your Web Scraping API token at ${PLAYGROUND_URL}`);
-    console.error(
-      "  2. Run `decodo setup` to save it (or set DECODO_AUTH_TOKEN)"
-    );
-    console.error("  3. Re-run your command");
   } else if (err instanceof AuthenticationError) {
     console.error("Hint: Run `decodo setup` to configure your auth token.");
   }
