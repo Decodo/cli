@@ -3,7 +3,6 @@ $ErrorActionPreference = 'Stop'
 
 $PackageName = '@decodo/cli'
 $CommandName = 'decodo'
-$CommandAlias = 'dcd'
 $MinNodeMajor = 18
 
 function Write-Info([string]$Message) {
@@ -57,8 +56,6 @@ npm install -g $PackageName
 $installedVersion = $null
 if (Get-Command $CommandName -ErrorAction SilentlyContinue) {
   $installedVersion = & $CommandName --version 2>$null
-} elseif (Get-Command $CommandAlias -ErrorAction SilentlyContinue) {
-  $installedVersion = & $CommandAlias --version 2>$null
 }
 
 if ($installedVersion) {
@@ -84,5 +81,5 @@ Write-Host 'Next step: configure your auth token with decodo setup'
 Write-Host 'Get started:'
 Write-Host '  decodo scrape https://ip.decodo.com'
 Write-Host '  decodo search "decodo scraping api"'
-Write-Host '  dcd whoami            # shorthand alias'
+Write-Host '  decodo whoami'
 Write-Host ''

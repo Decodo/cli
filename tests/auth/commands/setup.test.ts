@@ -2,13 +2,10 @@ import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
-const mockQuestion = vi.hoisted(() => vi.fn());
+const mockPromptHidden = vi.hoisted(() => vi.fn());
 
-vi.mock("node:readline/promises", () => ({
-  createInterface: vi.fn(() => ({
-    question: mockQuestion,
-    close: vi.fn(),
-  })),
+vi.mock("../../../src/platform/services/prompt-hidden.js", () => ({
+  promptHidden: mockPromptHidden,
 }));
 
 async function runSetup(
@@ -36,7 +33,7 @@ describe("setupCommand", () => {
     exitCode = undefined;
     stdout = [];
     stderr = [];
-    mockQuestion.mockReset();
+    mockPromptHidden.mockReset();
 
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
@@ -112,7 +109,7 @@ describe("setupCommand", () => {
   });
 
   it("exits with usage when interactive prompt returns empty input", async () => {
-    mockQuestion.mockResolvedValue("");
+    mockPromptHidden.mockResolvedValue("");
 
     await expect(runSetup([])).rejects.toThrow("process.exit:2");
 
@@ -121,7 +118,7 @@ describe("setupCommand", () => {
   });
 
   it("exits with usage when interactive prompt returns whitespace", async () => {
-    mockQuestion.mockResolvedValue("   ");
+    mockPromptHidden.mockResolvedValue("   ");
 
     await expect(runSetup([])).rejects.toThrow("process.exit:2");
 
@@ -130,13 +127,13 @@ describe("setupCommand", () => {
   });
 
   it("falls back to prompt when global --token is whitespace-only", async () => {
-    mockQuestion.mockResolvedValue("");
+    mockPromptHidden.mockResolvedValue("");
 
     await expect(runSetup([], ["--token", "   "])).rejects.toThrow(
       "process.exit:2"
     );
 
-    expect(mockQuestion).toHaveBeenCalledOnce();
+    expect(mockPromptHidden).toHaveBeenCalledOnce();
     expect(exitCode).toBe(2);
   });
 
@@ -161,11 +158,11 @@ describe("setupCommand", () => {
   });
 
   it("prompts for token interactively when no flags are provided", async () => {
-    mockQuestion.mockResolvedValue("prompted-token");
+    mockPromptHidden.mockResolvedValue("prompted-token");
 
     await runSetup([]);
 
-    expect(mockQuestion).toHaveBeenCalledOnce();
+    expect(mockPromptHidden).toHaveBeenCalledOnce();
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
       authToken: "prompted-token",

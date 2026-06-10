@@ -1,27 +1,15 @@
-import { stdin as input, stdout as output } from "node:process";
-import { createInterface } from "node:readline/promises";
 import { Command } from "commander";
 import { getRootOpts } from "../../cli/services/global-opts.js";
 import {
   CliUsageError,
   handleCliError,
 } from "../../platform/services/handle-cli-error.js";
+import { promptHidden } from "../../platform/services/prompt-hidden.js";
 import { validateAuthToken } from "../../scrape/services/auth-validation.js";
 import { PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";
 
 const TOKEN_PROMPT = `Paste your Web Scraping API basic auth token (${PLAYGROUND_URL}): `;
-
-async function promptForToken(): Promise<string> {
-  const rl = createInterface({ input, output });
-  try {
-    const token = await rl.question(TOKEN_PROMPT);
-
-    return token.trim();
-  } finally {
-    rl.close();
-  }
-}
 
 export const setupCommand = new Command("setup")
   .description("Configure the Decodo CLI with your auth token")
@@ -31,10 +19,11 @@ export const setupCommand = new Command("setup")
   )
   .action(async (options: { token?: string }, command) => {
     const rootOpts = getRootOpts(command);
-    const token =
+    const token = (
       options.token?.trim() ||
       rootOpts.token?.trim() ||
-      (await promptForToken());
+      (await promptHidden(TOKEN_PROMPT))
+    ).trim();
 
     if (!token) {
       handleCliError(new CliUsageError("auth token is required."));
