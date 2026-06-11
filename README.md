@@ -144,7 +144,7 @@ Once installed and authenticated, try:
 
 ```bash
 decodo scrape https://ip.decodo.com
-decodo google-search "top articles hacker news" --limit 5 --parse
+decodo google-search "top articles hacker news" --parse
 ```
 
 You should see markdown or parsed JSON within seconds. If you see an auth error, double-check your
@@ -198,7 +198,7 @@ decodo google-search "query" --parse
 decodo google-search "query" --full --pretty
 
 # NDJSON stream for jq / agents
-decodo google-search "query" --format ndjson --full | jq -c '.results[]'
+decodo google-search "query" --format ndjson --full | jq -c '.url'
 ```
 
 ## Examples
@@ -207,10 +207,10 @@ decodo google-search "query" --format ndjson --full | jq -c '.results[]'
 
 ```bash
 # Search and extract titles
-decodo google-search "rust web scraping" --limit 3 --parse | jq '.[].title'
+decodo google-search "rust web scraping" --parse | jq '.results.results.organic[].title'
 
 # Scrape JSON API endpoint
-decodo scrape https://ip.decodo.com/json | jq '.ip'
+decodo scrape https://ip.decodo.com/json | jq '.proxy.ip'
 
 # Screenshot to file, then open
 decodo screenshot https://example.com -o shot.png
