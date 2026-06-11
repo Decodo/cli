@@ -7,6 +7,7 @@ export interface ExecuteScrapeOptions {
   options: Record<string, unknown>;
   outputContext?: Partial<WriteScrapeResponseContext>;
   schema: DecodoSchema;
+  timeoutMs?: number;
   token: string;
   verbose?: boolean;
 }

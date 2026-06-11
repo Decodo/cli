@@ -32,12 +32,13 @@ describe("cli", () => {
     expect(output).toBe(packageJson.version);
   });
 
-  it("shows verbose flag in root help", () => {
+  it("shows verbose and timeout flags in root help", () => {
     const output = execFileSync(process.execPath, [cliPath, "--help"], {
       encoding: "utf8",
     });
 
     expect(output).toContain("-v, --verbose");
+    expect(output).toContain("--timeout <ms>");
   });
 
   it.each([
@@ -45,6 +46,7 @@ describe("cli", () => {
     ["unknown command", ["nosuchcmd"], 2],
     ["missing required arg", ["search"], 2],
     ["invalid choice", ["search", "q", "--engine", "yahoo"], 2],
+    ["invalid timeout", ["--timeout", "0", "scrape", "https://x.com"], 2],
   ])("exits with code 2 on %s", (_label, args, expectedExit) => {
     const { exitCode } = runCli(args);
     expect(exitCode).toBe(expectedExit);

@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 
 export interface RootOptions {
+  timeout?: number;
   token?: string;
   verbose?: boolean;
 }

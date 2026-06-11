@@ -85,9 +85,42 @@ describe("createTargetAction", () => {
     });
     expect(createDecodoClient).toHaveBeenCalledWith(
       "test-token",
-      BundledSchema.shared
+      BundledSchema.shared,
+      undefined
     );
     expect(stdout).toBe('{"ok":true}\n');
+  });
+
+  it("passes the global --timeout through to the client", async () => {
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: { ok: true } }],
+    });
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { scrape },
+    } as never);
+
+    const googleSearch = new Command("google-search")
+      .argument("<input>")
+      .action(createTargetAction("google_search", BundledSchema.shared));
+    attachScrapeOutputOptions(googleSearch);
+
+    const program = new Command()
+      .option("--token <token>")
+      .option("--timeout <ms>", "", (value: string) =>
+        Number.parseInt(value, 10)
+      )
+      .addCommand(googleSearch);
+
+    await program.parseAsync(
+      ["google-search", "coffee", "--token", "test-token", "--timeout", "5000"],
+      { from: "user" }
+    );
+
+    expect(createDecodoClient).toHaveBeenCalledWith(
+      "test-token",
+      BundledSchema.shared,
+      5000
+    );
   });
 
   it("prints verbose logs to stderr when --verbose is set", async () => {
