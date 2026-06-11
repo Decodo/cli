@@ -1,8 +1,10 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
 import { type Command, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
+import { attachBatchOptions } from "../../batch/commands/attach-batch-options.js";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
+import { CliUsageError } from "../../platform/services/handle-cli-error.js";
 import type { TargetCommandConfig } from "../types/target-command.js";
 import { snakeToCamel, snakeToKebab } from "./naming.js";
 import { getPrimaryInputField } from "./primary-input.js";
@@ -81,7 +83,7 @@ export function configureTargetCommand(
       | undefined;
     const inputHelp =
       primarySchema?.description ?? `Primary ${primaryField} input`;
-    command.argument("<input>", inputHelp);
+    command.argument("[input]", inputHelp);
   }
 
   const optionFields = Object.keys(parameterSchema?.properties ?? {}).filter(
@@ -94,6 +96,7 @@ export function configureTargetCommand(
   }
 
   attachScrapeOutputOptions(command);
+  attachBatchOptions(command);
 
   return { target, primaryField, optionFields };
 }
@@ -109,7 +112,9 @@ export function buildScrapeBody(
 
   if (config.primaryField) {
     if (input === undefined) {
-      throw new Error(`Missing required input for ${config.primaryField}.`);
+      throw new CliUsageError(
+        `Missing required input for ${config.primaryField}.`
+      );
     }
     body[config.primaryField] = input;
   }

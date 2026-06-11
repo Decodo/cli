@@ -201,6 +201,35 @@ decodo google-search "query" --full --pretty
 decodo google-search "query" --format ndjson --full | jq -c '.url'
 ```
 
+## Batch input
+
+Run the same command over many inputs from a file. Works with `scrape`, `search`, `screenshot`, and any target subcommand.
+
+| Flag | Effect |
+| --- | --- |
+| `--input-file <path>` | Read inputs from a `.txt` (one URL/query per line) or `.csv` file |
+| `--input-column <name>` | Column to read when `--input-file` is a CSV (required for CSV) |
+| `--concurrency <n>` | Number of requests to run in parallel (default: 4) |
+
+By default, results stream to stdout as NDJSON — one JSON record per line, regardless of TTY. Each record carries the item's `index` and `input` plus either a `result` or an `error` (`{ class, message }`). A failed item does not stop the batch; a summary is printed to stderr at the end. Pass `-o <dir>` to write one file per item instead (named by URL slug or row index). Inputs are streamed, so large files are not loaded into memory.
+
+```bash
+# Scrape every URL in a file, 8 at a time, as NDJSON
+decodo scrape --input-file urls.txt --concurrency 8 > results.ndjson
+
+# CSV input: choose which column holds the URL/query
+decodo scrape --input-file products.csv --input-column url
+
+# One result file per input, written into a directory
+decodo scrape --input-file urls.txt -o results/
+
+# Batch a target subcommand, then post-process with jq
+decodo google-search --input-file queries.txt --format ndjson | jq -c '.input'
+
+# Batch screenshots — PNG per item, output directory required
+decodo screenshot --input-file urls.txt -o shots/
+```
+
 ## Examples
 
 ### Pipe-friendly workflows
