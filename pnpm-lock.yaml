@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@decodo/sdk-ts':
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       commander:
         specifier: ^14.0.0
         version: 14.0.3
@@ -104,8 +104,8 @@ packages:
     resolution: {integrity: sha512-S0My7XPGIgpRWMDG8uRqalbgT+a6FmCUdOW+HaIOVVpUPHOb7RrpvjTjiODadKp06fsrVDJZlIzc6yCTp4AnxA==}
     engines: {node: '>= 20.12.0'}
 
-  '@decodo/sdk-ts@2.1.1':
-    resolution: {integrity: sha512-1pSgG4BiPzjQEObSKahnF35wgU9Gck/aD466JwXwiNS0iRtEtcZlYpjSOuTvKV50CWuNAFZk0Ak7NHuWc4+Q7A==}
+  '@decodo/sdk-ts@2.1.2':
+    resolution: {integrity: sha512-V/SdHS0DV9L8gBJc5ljQbTmbgV7C8Cn7V91qn3JfnHKgvSmuUq2kLH27UPgCbAa0T2ZVXOkBzbIog5ZnOzAUMg==}
     engines: {node: '>=18.0.0'}
 
   '@esbuild/aix-ppc64@0.27.7':
@@ -966,7 +966,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@decodo/sdk-ts@2.1.1':
+  '@decodo/sdk-ts@2.1.2':
     dependencies:
       zod: 4.4.3
 
