@@ -20,4 +20,15 @@ describe("createCodegenTargetCommands", () => {
       true
     );
   });
+
+  it("uses a generic description for targets without a real group", () => {
+    const schema = BundledSchema.shared;
+    const commands = createCodegenTargetCommands(schema);
+
+    const ungrouped = commands.find((cmd) => cmd.name() === "youtube-video");
+    expect(ungrouped?.description()).toBe("Scrape target");
+
+    const grouped = commands.find((cmd) => cmd.name() === "amazon-product");
+    expect(grouped?.description()).toBe("Amazon scrape target");
+  });
 });
