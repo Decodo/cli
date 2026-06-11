@@ -1,3 +1,4 @@
+// TODO(SCR-3150): switch to cli when sdk task lands
 export const INTEGRATION_HEADER = "cli";
 
 export const SCHEMA_TTL_MS = 3_600_000;
