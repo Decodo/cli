@@ -256,6 +256,18 @@ decodo google-search "shoes" --geo de --parse
 
 Use `decodo <target> --help` for all geo, locale, and target-specific options from the API schema.
 
+### Request timeouts
+
+Requests use the SDK default timeout of 180s. Override it globally with `--timeout <ms>` — useful to fail fast on slow targets or batch runs. A timed-out request exits with code `6`.
+
+```bash
+# Fail fast: give up after 30s
+decodo scrape https://example.com --timeout 30000
+
+# Allow longer for a heavy page render
+decodo screenshot https://example.com --timeout 120000 -o shot.png
+```
+
 ## Agent tooling
 
 Coding agents (Cursor, Claude Code, Codex, Gemini CLI, Windsurf) should invoke the CLI as a **shell subprocess**, not embed scraping logic.

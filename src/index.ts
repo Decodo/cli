@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { createCommands } from "./cli/register.js";
 import { configureCommanderExit } from "./cli/services/configure-commander-exit.js";
+import { parseTimeout } from "./cli/services/parse-timeout.js";
 import { handleCliError } from "./platform/services/handle-cli-error.js";
 
 function readVersion(): string {
@@ -27,6 +28,11 @@ const program = new Command()
   .option(
     "--token <token>",
     "Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)"
+  )
+  .option(
+    "--timeout <ms>",
+    "Per-request timeout in milliseconds (default: 180000)",
+    parseTimeout
   );
 
 async function main(): Promise<void> {

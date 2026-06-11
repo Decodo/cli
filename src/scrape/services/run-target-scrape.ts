@@ -32,8 +32,9 @@ async function executeScrape({
   outputContext,
   input,
   verbose = false,
+  timeoutMs,
 }: ExecuteScrapeOptions): Promise<void> {
-  const client = createDecodoClient(token, schema);
+  const client = createDecodoClient(token, schema, timeoutMs);
   const startedAt = Date.now();
   const response = await client.webScrapingApi.scrape(
     body as unknown as ScrapeRequest
@@ -52,6 +53,7 @@ interface ExecuteBatchOptions {
   options: Record<string, unknown>;
   resolveBody: ScrapeBodyBuilder;
   schema: DecodoSchema;
+  timeoutMs?: number;
   token: string;
   verbose: boolean;
 }
@@ -63,8 +65,9 @@ async function executeBatch({
   resolveBody,
   binary,
   verbose,
+  timeoutMs,
 }: ExecuteBatchOptions): Promise<void> {
-  const client = createDecodoClient(token, schema);
+  const client = createDecodoClient(token, schema, timeoutMs);
   const batch = options as BatchFlags & OutputOptions;
   const full = batch.full === true;
 
@@ -107,6 +110,7 @@ export function createTargetAction(
   ): Promise<void> => {
     const rootOpts = getRootOpts(command);
     const verbose = rootOpts.verbose === true;
+    const timeoutMs = rootOpts.timeout;
 
     try {
       const batchMode = (options as BatchFlags).inputFile !== undefined;
@@ -134,6 +138,7 @@ export function createTargetAction(
           resolveBody,
           binary: outputContext?.binary?.kind === "png",
           verbose,
+          timeoutMs,
         });
         return;
       }
@@ -149,6 +154,7 @@ export function createTargetAction(
         outputContext,
         input,
         verbose,
+        timeoutMs,
       });
     } catch (err) {
       handleCliError(err, { fallbackMessage: "Scrape failed." });
