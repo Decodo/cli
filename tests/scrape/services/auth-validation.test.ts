@@ -25,11 +25,11 @@ describe("validateAuthToken", () => {
     expect(url).toBe("https://scraper-api.decodo.com/v2/scrape");
     expect(JSON.parse(init.body as string)).toEqual({
       target: "universal",
-      url: "https://ip.decodo.com",
+      url: "https://does-not-exist.decodo.com",
     });
     expect(init.headers).toMatchObject({
       Authorization: "Basic test-token",
-      "x-integration": "sdk-ts", // TODO(SCR-3150): switch to cli when sdk task lands
+      "x-integration": "sdk-ts", // TODO: switch to cli when sdk task lands
     });
   });
 });

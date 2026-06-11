@@ -1,6 +1,7 @@
 import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ConfigParseError } from "../../../src/auth/errors/config-parse-error.js";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { attachScrapeOutputOptions } from "../../../src/output/commands/attach-output-options.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
@@ -145,7 +146,7 @@ describe("createTargetAction", () => {
 
   it("maps resolveAuthToken failures through handleCliError", async () => {
     vi.mocked(resolveAuthToken).mockRejectedValue(
-      new SyntaxError("Unexpected token in config.json")
+      new ConfigParseError("/tmp/config.json")
     );
 
     const program = new Command()
