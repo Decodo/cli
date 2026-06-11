@@ -5,6 +5,7 @@ import {
   TimeoutError,
   ValidationError,
 } from "@decodo/sdk-ts";
+import { PLAYGROUND_URL } from "../../auth/constants.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { EXIT } from "../constants.js";
 
@@ -113,7 +114,14 @@ export function handleCliError(
     }
   }
 
-  if (err instanceof AuthRequiredError || err instanceof AuthenticationError) {
+  if (err instanceof AuthRequiredError) {
+    console.error(
+      "\nThe Decodo CLI is installed and working - it just needs an auth token:\n" +
+        `  1. Get your Web Scraping API token at ${PLAYGROUND_URL}\n` +
+        "  2. Run `decodo setup` to save it (or set DECODO_AUTH_TOKEN)\n" +
+        "  3. Re-run your command"
+    );
+  } else if (err instanceof AuthenticationError) {
     console.error("Hint: Run `decodo setup` to configure your auth token.");
   }
 

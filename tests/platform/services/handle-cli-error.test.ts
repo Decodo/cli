@@ -33,21 +33,24 @@ describe("handleCliError", () => {
     vi.restoreAllMocks();
   });
 
-  it("maps auth-required errors to exit code 3 with setup hint", () => {
+  it("maps auth-required errors to exit code 3 with onboarding steps", () => {
     expect(() =>
       handleCliError(new AuthRequiredError("token missing"))
     ).toThrow("process.exit:3");
 
     expect(exitCode).toBe(3);
     expect(stderr.join("\n")).toContain("token missing");
+    expect(stderr.join("\n")).toContain("installed and working");
     expect(stderr.join("\n")).toContain("decodo setup");
+    expect(stderr.join("\n")).toContain("DECODO_AUTH_TOKEN");
   });
 
-  it("maps SDK authentication errors to exit code 3", () => {
+  it("maps SDK authentication errors to exit code 3 with setup hint", () => {
     const err = new AuthenticationError("Unauthorized");
 
     expect(() => handleCliError(err)).toThrow("process.exit:3");
     expect(exitCode).toBe(3);
+    expect(stderr.join("\n")).toContain("decodo setup");
   });
 
   it("maps validation errors to exit code 4 and prints details", () => {

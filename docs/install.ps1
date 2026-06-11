@@ -50,8 +50,40 @@ if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
   Write-Err 'npm is not available. Install npm and try again.'
 }
 
-Write-Info "Installing $PackageName globally..."
-npm install -g $PackageName
+$UserPrefix = $null
+
+# Run npm install without aborting on failure, so we can fall back. Returns the exit code.
+function Invoke-NpmInstall {
+  param([string[]]$NpmArgs)
+  try {
+    & npm install -g @NpmArgs | Out-Host
+    return $LASTEXITCODE
+  } catch {
+    return 1
+  }
+}
+
+function Install-Package {
+  Write-Info "Installing $PackageName globally..."
+  if ((Invoke-NpmInstall @($PackageName)) -eq 0) {
+    return
+  }
+
+  Write-Warn 'Global install failed. Falling back to a user-level install.'
+  $script:UserPrefix = Join-Path $env:APPDATA 'npm-global'
+  New-Item -ItemType Directory -Force -Path $script:UserPrefix | Out-Null
+  Write-Info "Installing $PackageName to $script:UserPrefix instead..."
+  if ((Invoke-NpmInstall @('--prefix', $script:UserPrefix, $PackageName)) -ne 0) {
+    Write-Err @"
+Installation failed.
+Try fixing your npm permissions, or run the CLI without installing: npx $PackageName --help
+"@
+  }
+
+  $env:PATH = "$script:UserPrefix;$env:PATH"
+}
+
+Install-Package
 
 $installedVersion = $null
 if (Get-Command $CommandName -ErrorAction SilentlyContinue) {
@@ -65,15 +97,24 @@ if ($installedVersion) {
   Write-Host ''
   Write-Host 'Installed! You may need to restart your shell or add the npm global bin directory to your PATH.' -ForegroundColor Green
 
-  $npmPrefix = (npm prefix -g 2>$null).Trim()
-  if ($npmPrefix) {
-    $pathEntries = $env:PATH -split ';' | Where-Object { $_ -ne '' }
-    if ($pathEntries -notcontains $npmPrefix) {
-      Write-Warn "$npmPrefix is not in your PATH. Add it with:"
-      Write-Host "  setx PATH `"$npmPrefix;%PATH%`""
-      Write-Host ''
+  if (-not $UserPrefix) {
+    $npmPrefix = (npm prefix -g 2>$null).Trim()
+    if ($npmPrefix) {
+      $pathEntries = $env:PATH -split ';' | Where-Object { $_ -ne '' }
+      if ($pathEntries -notcontains $npmPrefix) {
+        Write-Warn "$npmPrefix is not in your PATH. Add it with:"
+        Write-Host "  setx PATH `"$npmPrefix;%PATH%`""
+        Write-Host ''
+      }
     }
   }
+}
+
+if ($UserPrefix) {
+  Write-Host ''
+  Write-Host "The CLI was installed to $UserPrefix."
+  Write-Host 'Add it to your PATH permanently with:'
+  Write-Host "  setx PATH `"$UserPrefix;%PATH%`""
 }
 
 Write-Host ''
