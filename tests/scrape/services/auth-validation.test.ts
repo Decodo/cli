@@ -29,7 +29,7 @@ describe("validateAuthToken", () => {
     });
     expect(init.headers).toMatchObject({
       Authorization: "Basic test-token",
-      "x-integration": "sdk-ts", // TODO: switch to cli when sdk task lands
+      "x-integration": "cli",
     });
   });
 });
