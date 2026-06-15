@@ -206,10 +206,9 @@ describe("createTargetAction", () => {
         )
       );
 
-    await program.parseAsync(
-      ["universal-ecommerce", "--token", "test-token"],
-      { from: "user" }
-    );
+    await program.parseAsync(["universal-ecommerce", "--token", "test-token"], {
+      from: "user",
+    });
 
     expect(scrape).toHaveBeenCalledWith({
       target: "universal_ecommerce",
