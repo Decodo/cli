@@ -51,11 +51,22 @@ export function createTargetAction(
     ((input, options) =>
       buildScrapeBody(target, input, options, config, schema));
 
-  return async (
-    input: string | undefined,
-    options: Record<string, unknown>,
-    command: Command
-  ): Promise<void> => {
+  return async (...args: unknown[]): Promise<void> => {
+    let input: string | undefined;
+    let options: Record<string, unknown>;
+    let command: Command;
+
+    if (config.primaryField) {
+      [input, options, command] = args as [
+        string | undefined,
+        Record<string, unknown>,
+        Command,
+      ];
+    } else {
+      [options, command] = args as [Record<string, unknown>, Command];
+      input = undefined;
+    }
+
     const rootOpts = getRootOpts(command);
     const verbose = rootOpts.verbose === true;
 

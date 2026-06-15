@@ -31,6 +31,12 @@ export function writeScrapeResponse(
   }
 
   const full = options.full === true;
+  if (!full && response.results.length > 1) {
+    console.error(
+      `Warning: showing 1 of ${response.results.length} results; use --format ndjson or --full`
+    );
+  }
+
   const indent = resolvePrettyIndent(options);
   const payload = extractPayload(response, full);
   const text = full
