@@ -189,4 +189,30 @@ describe("createTargetAction", () => {
 
     expect(exitCode).toBe(4);
   });
+
+  it("handles targets without a primary input argument", async () => {
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: { ok: true } }],
+    });
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { scrape },
+    } as never);
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(
+        new Command("universal-ecommerce").action(
+          createTargetAction("universal_ecommerce", BundledSchema.shared)
+        )
+      );
+
+    await program.parseAsync(["universal-ecommerce", "--token", "test-token"], {
+      from: "user",
+    });
+
+    expect(scrape).toHaveBeenCalledWith({
+      target: "universal_ecommerce",
+    });
+    expect(stdout).toBe('{"ok":true}\n');
+  });
 });

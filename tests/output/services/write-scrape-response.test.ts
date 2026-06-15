@@ -110,6 +110,29 @@ describe("writeScrapeResponse", () => {
     }
   });
 
+  it("warns on stderr when default output shows one of many results", () => {
+    const response = {
+      results: [{ content: { a: 1 } }, { content: { b: 2 } }],
+    } as SyncResponse;
+
+    writeScrapeResponse(response, { options: {} });
+
+    expect(written).toBe('{"a":1}\n');
+    expect(stderr).toContain(
+      "Warning: showing 1 of 2 results; use --format ndjson or --full"
+    );
+  });
+
+  it("does not warn when --full is set", () => {
+    const response = {
+      results: [{ content: { a: 1 } }, { content: { b: 2 } }],
+    } as SyncResponse;
+
+    writeScrapeResponse(response, { options: { full: true } });
+
+    expect(stderr).toEqual([]);
+  });
+
   it("refuses TTY stdout for binary png without -o", () => {
     Object.defineProperty(process.stdout, "isTTY", {
       value: true,

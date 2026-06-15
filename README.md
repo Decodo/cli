@@ -144,7 +144,7 @@ Once installed and authenticated, try:
 
 ```bash
 decodo scrape https://ip.decodo.com
-decodo google-search "top articles hacker news" --limit 5 --parse
+decodo google-search "top articles hacker news" --page-count 5 --parse
 ```
 
 You should see markdown or parsed JSON within seconds. If you see an auth error, double-check your
@@ -183,12 +183,14 @@ By default, scrape commands print the first result's `content` (parsed JSON when
 | Flag | Effect |
 | --- | --- |
 | `--full` | Print the full API response envelope |
-| `--format ndjson` | One JSON object per result (pipe-friendly) |
+| `--format ndjson` | One JSON object per result line on stdout (pipe-friendly) |
 | `--pretty` | Indented JSON on stdout |
 | `-o, --output <path>` | Write to a file instead of stdout |
 | `-v, --verbose` | Print debug logs to stderr |
 
 **TTY vs pipe:** When stdout is a terminal, human-readable output is used where possible. When piped or redirected, raw bytes or compact JSON is written. Screenshot output must go to `-o` or a redirect — writing binary PNG to a TTY is rejected.
+
+**NDJSON line contract:** With `--format ndjson`, stdout is one JSON object per API result line. Without `--full`, each line is that result's `content`. With `--full`, each line is the full result entry (e.g. `content`, `status_code`, `url`). There is no envelope-level `.results[]` on a single line — pipe each line through `jq` individually.
 
 ```bash
 # Parsed JSON from Google Search
@@ -198,7 +200,7 @@ decodo google-search "query" --parse
 decodo google-search "query" --full --pretty
 
 # NDJSON stream for jq / agents
-decodo google-search "query" --format ndjson --full | jq -c '.results[]'
+decodo google-search "query" --format ndjson --full | jq -c '.url'
 ```
 
 ## Examples
@@ -207,10 +209,10 @@ decodo google-search "query" --format ndjson --full | jq -c '.results[]'
 
 ```bash
 # Search and extract titles
-decodo google-search "rust web scraping" --limit 3 --parse | jq '.[].title'
+decodo google-search "rust web scraping" --page-count 3 --parse | jq '.results.results.organic[].title'
 
 # Scrape JSON API endpoint
-decodo scrape https://ip.decodo.com/json | jq '.ip'
+decodo scrape https://ip.decodo.com/json | jq '.proxy.ip'
 
 # Screenshot to file, then open
 decodo screenshot https://example.com -o shot.png

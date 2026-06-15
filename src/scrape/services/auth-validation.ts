@@ -1,11 +1,35 @@
-import { Target as ScrapeTarget } from "@decodo/sdk-ts";
+import {
+  AuthenticationError,
+  DecodoError,
+  RateLimitError,
+  Target as ScrapeTarget,
+  TimeoutError,
+} from "@decodo/sdk-ts";
 import { createDecodoClient } from "./client.js";
+
+const AUTH_PROBE_URL = "https://does-not-exist.decodo.com";
 
 export async function validateAuthToken(token: string): Promise<void> {
   const client = createDecodoClient(token);
 
-  await client.webScrapingApi.scrape({
-    target: ScrapeTarget.Universal,
-    url: "https://does-not-exist.decodo.com",
-  });
+  try {
+    await client.webScrapingApi.scrape({
+      target: ScrapeTarget.Universal,
+      url: AUTH_PROBE_URL,
+    });
+  } catch (err) {
+    if (
+      err instanceof AuthenticationError ||
+      err instanceof RateLimitError ||
+      err instanceof TimeoutError
+    ) {
+      throw err;
+    }
+
+    if (err instanceof DecodoError) {
+      return;
+    }
+
+    throw err;
+  }
 }
