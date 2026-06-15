@@ -25,7 +25,7 @@ describe("validateAuthToken", () => {
     expect(url).toBe("https://scraper-api.decodo.com/v2/scrape");
     expect(JSON.parse(init.body as string)).toEqual({
       target: "universal",
-      url: "https://does-not-exist.decodo.com",
+      url: "https://ip.decodo.com",
     });
     expect(init.headers).toMatchObject({
       Authorization: "Basic test-token",

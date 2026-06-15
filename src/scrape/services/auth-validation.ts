@@ -6,6 +6,6 @@ export async function validateAuthToken(token: string): Promise<void> {
 
   await client.webScrapingApi.scrape({
     target: ScrapeTarget.Universal,
-    url: "https://does-not-exist.decodo.com",
+    url: "https://ip.decodo.com",
   });
 }
