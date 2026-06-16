@@ -36,6 +36,22 @@ describe("applyRequestDefaults", () => {
     });
   });
 
+  it("skips parse/markdown defaults for headless png screenshots", () => {
+    const body: Record<string, unknown> = {
+      target: Target.Universal,
+      url: "https://example.com",
+      headless: "png",
+    };
+
+    applyRequestDefaults(body, Target.Universal, schema);
+
+    expect(body).toEqual({
+      target: Target.Universal,
+      url: "https://example.com",
+      headless: "png",
+    });
+  });
+
   it("does not override explicit parse or markdown", () => {
     const body: Record<string, unknown> = {
       target: Target.GoogleSearch,
