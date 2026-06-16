@@ -1,9 +1,7 @@
 import { Command } from "commander";
 import { getRootOpts } from "../../cli/services/global-opts.js";
-import {
-  CliUsageError,
-  handleCliError,
-} from "../../platform/services/handle-cli-error.js";
+import { CliUsageError } from "../../platform/errors/cli-usage-error.js";
+import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import { promptHidden } from "../../platform/services/prompt-hidden.js";
 import { validateAuthToken } from "../../scrape/services/auth-validation.js";
 import { PLAYGROUND_URL } from "../constants.js";

@@ -7,10 +7,8 @@ import {
 } from "@decodo/sdk-ts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthRequiredError } from "../../../src/auth/errors/auth-required-error.js";
-import {
-  CliUsageError,
-  handleCliError,
-} from "../../../src/platform/services/handle-cli-error.js";
+import { CliUsageError } from "../../../src/platform/errors/cli-usage-error.js";
+import { handleCliError } from "../../../src/platform/services/handle-cli-error.js";
 
 describe("handleCliError", () => {
   let exitCode: number | undefined;

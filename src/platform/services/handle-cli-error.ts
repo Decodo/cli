@@ -8,6 +8,7 @@ import {
 import { PLAYGROUND_URL } from "../../auth/constants.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { EXIT } from "../constants.js";
+import { CliUsageError } from "../errors/cli-usage-error.js";
 
 const EXIT_SIGNAL_PREFIX = "process.exit:";
 
@@ -21,13 +22,6 @@ const NETWORK_ERROR_CODES = new Set([
   "ENETUNREACH",
   "EPIPE",
 ]);
-
-export class CliUsageError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CliUsageError";
-  }
-}
 
 function findNetworkCause(
   err: unknown

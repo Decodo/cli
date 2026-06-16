@@ -1,6 +1,6 @@
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
-import { CliUsageError } from "./handle-cli-error.js";
+import { CliUsageError } from "../errors/cli-usage-error.js";
 
 const CHAR_ETX = 3;
 const CHAR_EOT = 4;
