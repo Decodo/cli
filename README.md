@@ -280,7 +280,7 @@ Run `decodo setup` or export `DECODO_AUTH_TOKEN`.
 
 **`command not found: decodo`**
 
-Ensure npm's global bin directory is on your `PATH` after `npm install -g`. Re-run the [install script](https://decodo.github.io/cli/install.sh) or use `npx @decodo/cli`.
+The [install script](https://decodo.github.io/cli/install.sh) auto-configures PATH and prints a `source` step — re-run it or open a new terminal. You can also use `npx @decodo/cli`.
 
 **Validation / API errors**
 

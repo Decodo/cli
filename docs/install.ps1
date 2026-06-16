@@ -5,6 +5,10 @@ $PackageName = '@decodo/cli'
 $CommandName = 'decodo'
 $MinNodeMajor = 18
 
+$script:OrigPath = $env:PATH
+$script:UserPrefix = $null
+$script:PathActivationRequired = $false
+
 function Write-Info([string]$Message) {
   Write-Host "==> $Message" -ForegroundColor Blue
 }
@@ -16,6 +20,15 @@ function Write-Warn([string]$Message) {
 function Write-Err([string]$Message) {
   Write-Host "error: $Message" -ForegroundColor Red
   exit 1
+}
+
+function Write-Ok([string]$Message) {
+  Write-Host $Message -ForegroundColor Green
+}
+
+function Test-PathContains([string]$Dir, [string]$PathValue) {
+  $entries = $PathValue -split ';' | Where-Object { $_ -ne '' }
+  return $entries -contains $Dir
 }
 
 function Get-NodeVersion {
@@ -39,20 +52,6 @@ Update Node.js from https://nodejs.org/ and try again.
   return $version
 }
 
-Write-Host ''
-Write-Host 'Decodo CLI Installer' -ForegroundColor White
-Write-Host ''
-
-$nodeVersion = Get-NodeVersion
-Write-Info "Found Node.js v$nodeVersion"
-
-if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-  Write-Err 'npm is not available. Install npm and try again.'
-}
-
-$UserPrefix = $null
-
-# Run npm install without aborting on failure, so we can fall back. Returns the exit code.
 function Invoke-NpmInstall {
   param([string[]]$NpmArgs)
   try {
@@ -83,44 +82,124 @@ Try fixing your npm permissions, or run the CLI without installing: npx $Package
   $env:PATH = "$script:UserPrefix;$env:PATH"
 }
 
+function Resolve-InstallBin {
+  if ($script:UserPrefix) {
+    return $script:UserPrefix
+  }
+
+  $npmPrefix = (npm prefix -g 2>$null).Trim()
+  if (-not $npmPrefix) {
+    Write-Err 'Could not determine npm global bin directory.'
+  }
+
+  return $npmPrefix
+}
+
+function Ensure-InstallPath([string]$BinDir) {
+  if (Test-PathContains $BinDir $script:OrigPath) {
+    return
+  }
+
+  $script:PathActivationRequired = $true
+  $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+
+  if ($userPath -and $userPath -like "*$BinDir*") {
+    Write-Warn "$BinDir is in your user PATH but not active in this shell."
+    Write-Warn 'Restart this terminal, then run decodo setup.'
+    return
+  }
+
+  $newPath = if ($userPath) { "$BinDir;$userPath" } else { $BinDir }
+  [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
+  Write-Warn "$BinDir was not in your PATH. Added it to your user PATH."
+  Write-Warn 'Restart this terminal, then run decodo setup.'
+}
+
+function Get-DecodoBin([string]$BinDir) {
+  $cmd = Join-Path $BinDir 'decodo.cmd'
+  if (Test-Path $cmd) {
+    return $cmd
+  }
+
+  return Join-Path $BinDir 'decodo'
+}
+
+function Get-CommandPrefix([string]$BinDir) {
+  if ($script:PathActivationRequired) {
+    return Get-DecodoBin $BinDir
+  }
+
+  return $CommandName
+}
+
+function Offer-Setup([string]$BinDir) {
+  $decodoBin = Get-DecodoBin $BinDir
+  if (-not (Test-Path $decodoBin)) {
+    Write-Err "Could not find $decodoBin after install."
+  }
+
+  if (-not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected) {
+    Write-Host ''
+    Write-Host 'Next: configure your auth token.'
+    Write-Host ''
+    $answer = Read-Host 'Continue with setup? [Y/n]'
+    if ($answer -match '^[nN]') {
+      $cmd = Get-CommandPrefix $BinDir
+      Write-Host ''
+      Write-Host "Run $cmd setup when you are ready."
+      Write-Host ''
+      return
+    }
+
+    & $decodoBin setup
+    return
+  }
+
+  $cmd = Get-CommandPrefix $BinDir
+  Write-Host ''
+  Write-Host "Next step: configure your auth token with $cmd setup"
+  Write-Host ''
+}
+
+function Print-NextSteps([string]$BinDir) {
+  $cmd = Get-CommandPrefix $BinDir
+  Write-Host 'Get started:'
+  Write-Host "  $cmd scrape https://ip.decodo.com"
+  Write-Host '  $cmd search "decodo scraping api"'
+  Write-Host "  $cmd whoami"
+  Write-Host ''
+}
+
+Write-Host ''
+Write-Host 'Decodo CLI Installer' -ForegroundColor White
+Write-Host ''
+
+$nodeVersion = Get-NodeVersion
+Write-Info "Found Node.js v$nodeVersion"
+
+if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+  Write-Err 'npm is not available. Install npm and try again.'
+}
+
 Install-Package
 
-$installedVersion = $null
-if (Get-Command $CommandName -ErrorAction SilentlyContinue) {
-  $installedVersion = & $CommandName --version 2>$null
+$binDir = Resolve-InstallBin
+Ensure-InstallPath $binDir
+
+$decodoBin = Get-DecodoBin $binDir
+$installedVersion = & $decodoBin --version 2>$null
+if (-not $installedVersion) {
+  $installedVersion = 'unknown'
 }
 
-if ($installedVersion) {
+Write-Host ''
+Write-Ok "Success! $PackageName $installedVersion is installed."
+
+if ($script:PathActivationRequired) {
   Write-Host ''
-  Write-Host "Success! $PackageName $installedVersion is installed." -ForegroundColor Green
 } else {
-  Write-Host ''
-  Write-Host 'Installed! You may need to restart your shell or add the npm global bin directory to your PATH.' -ForegroundColor Green
-
-  if (-not $UserPrefix) {
-    $npmPrefix = (npm prefix -g 2>$null).Trim()
-    if ($npmPrefix) {
-      $pathEntries = $env:PATH -split ';' | Where-Object { $_ -ne '' }
-      if ($pathEntries -notcontains $npmPrefix) {
-        Write-Warn "$npmPrefix is not in your PATH. Add it with:"
-        Write-Host "  setx PATH `"$npmPrefix;%PATH%`""
-        Write-Host ''
-      }
-    }
-  }
+  Write-Ok 'Ready to use — decodo is on your PATH.'
 }
 
-if ($UserPrefix) {
-  Write-Host ''
-  Write-Host "The CLI was installed to $UserPrefix."
-  Write-Host 'Add it to your PATH permanently with:'
-  Write-Host "  setx PATH `"$UserPrefix;%PATH%`""
-}
-
-Write-Host ''
-Write-Host 'Next step: configure your auth token with decodo setup'
-Write-Host 'Get started:'
-Write-Host '  decodo scrape https://ip.decodo.com'
-Write-Host '  decodo search "decodo scraping api"'
-Write-Host '  decodo whoami'
-Write-Host ''
+Offer-Setup $binDir
+Print-NextSteps $binDir
