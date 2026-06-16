@@ -90,6 +90,22 @@ describe("handleCliError", () => {
     expect(exitCode).toBe(7);
   });
 
+  it("maps syscall-coded network failures in the cause chain to exit code 7", () => {
+    const cause = Object.assign(
+      new Error("getaddrinfo ENOTFOUND api.decodo.com"),
+      {
+        code: "ENOTFOUND",
+      }
+    );
+    const err = Object.assign(new TypeError("fetch failed"), { cause });
+
+    expect(() => handleCliError(err)).toThrow("process.exit:7");
+
+    expect(exitCode).toBe(7);
+    expect(stderr.join("\n")).toContain("fetch failed");
+    expect(stderr.join("\n")).toContain("ENOTFOUND");
+  });
+
   it("maps explicit usage errors to exit code 2", () => {
     expect(() => handleCliError(new CliUsageError("bad flag"))).toThrow(
       "process.exit:2"

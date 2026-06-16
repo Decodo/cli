@@ -6,6 +6,7 @@ import { getRootOpts } from "../../cli/services/global-opts.js";
 import { verboseLog } from "../../cli/services/verbose-log.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
 import type { OutputOptions } from "../../output/types/output-options.js";
+import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import type {
   ExecuteScrapeOptions,
@@ -37,6 +38,22 @@ async function executeScrape({
     input,
     ...outputContext,
   });
+}
+
+function resolveOutputContext(
+  explicit: Partial<WriteScrapeResponseContext> | undefined,
+  body: Record<string, unknown>,
+  input: string | undefined
+): Partial<WriteScrapeResponseContext> | undefined {
+  if (explicit?.binary) {
+    return explicit;
+  }
+
+  if (body.headless === "png") {
+    return { ...explicit, binary: { kind: "png" }, input };
+  }
+
+  return explicit;
 }
 
 export function createTargetAction(
@@ -79,7 +96,11 @@ export function createTargetAction(
 
       const body = resolveBody(input, options);
       verboseLog(verbose, formatScrapeRequestLog(body));
-      const outputContext = getOutputContext?.(input, options);
+      const outputContext = resolveOutputContext(
+        getOutputContext?.(input, options),
+        body,
+        input
+      );
       await executeScrape({
         token: auth.token,
         schema,

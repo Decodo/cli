@@ -1,5 +1,5 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
-import { type Command, Option } from "commander";
+import { type Command, InvalidArgumentError, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
@@ -25,7 +25,27 @@ function formatOptionHelp(propertySchema: JSONSchema4): string {
     return `${propertySchema.type}${bounds}`;
   }
 
+  if (propertySchema.type === "array") {
+    return "JSON array";
+  }
+
+  if (propertySchema.type === "object") {
+    return "JSON object";
+  }
+
   return String(propertySchema.type ?? "value");
+}
+
+function parseJsonArg(field: string) {
+  return (value: string): unknown => {
+    try {
+      return JSON.parse(value);
+    } catch {
+      throw new InvalidArgumentError(
+        `--${snakeToKebab(field)} expects valid JSON.`
+      );
+    }
+  };
 }
 
 function addPropertyOption(
@@ -61,6 +81,11 @@ function addPropertyOption(
     command.option(`--${kebabFlag} <n>`, help, (value: string) =>
       Number.parseFloat(value)
     );
+    return;
+  }
+
+  if (propertySchema.type === "array" || propertySchema.type === "object") {
+    command.option(`--${kebabFlag} <json>`, help, parseJsonArg(field));
     return;
   }
 
