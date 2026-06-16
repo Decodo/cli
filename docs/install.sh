@@ -112,7 +112,7 @@ offer_setup() {
 
   if ! [ -t 0 ] || ! [ -t 1 ]; then
     cmd=$(command_prefix "$bin_dir")
-    printf '\nNext step: configure your auth token with %s%s setup%s\n\n' "$BOLD" "$cmd" "$RESET"
+    printf "\nNext step: configure your auth token with ${BOLD}%s setup${RESET}\n\n" "$cmd"
     return 0
   fi
 
@@ -141,9 +141,9 @@ print_next_steps() {
   cmd=$(command_prefix "$bin_dir")
 
   printf 'Get started:\n'
-  printf '  %s%s scrape%s https://ip.decodo.com\n' "$BOLD" "$cmd" "$RESET"
-  printf '  %s%s search%s "decodo scraping api"\n' "$BOLD" "$cmd" "$RESET"
-  printf '  %s%s whoami%s\n\n' "$BOLD" "$cmd" "$RESET"
+  printf "  ${BOLD}%s scrape${RESET} https://ip.decodo.com\n" "$cmd"
+  printf "  ${BOLD}%s search${RESET} \"decodo scraping api\"\n" "$cmd"
+  printf "  ${BOLD}%s whoami${RESET}\n\n" "$cmd"
 }
 
 check_platform() {
