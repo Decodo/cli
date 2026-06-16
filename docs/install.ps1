@@ -165,7 +165,7 @@ function Print-NextSteps([string]$BinDir) {
   $cmd = Get-CommandPrefix $BinDir
   Write-Host 'Get started:'
   Write-Host "  $cmd scrape https://ip.decodo.com"
-  Write-Host '  $cmd search "decodo scraping api"'
+  Write-Host "  $cmd search ""decodo scraping api"""
   Write-Host "  $cmd whoami"
   Write-Host ''
 }
