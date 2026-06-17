@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConfigParseError } from "../../../src/auth/errors/config-parse-error.js";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { attachScrapeOutputOptions } from "../../../src/output/commands/attach-output-options.js";
+import { writeBinaryOutput } from "../../../src/platform/services/write-binary.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 import { createTargetAction } from "../../../src/scrape/services/run-target-scrape.js";
 
@@ -14,6 +15,14 @@ vi.mock("../../../src/auth/services/resolve-token.js", () => ({
 vi.mock("../../../src/scrape/services/client.js", () => ({
   createDecodoClient: vi.fn(),
 }));
+
+vi.mock("../../../src/platform/services/write-binary.js", () => ({
+  writeBinaryOutput: vi.fn(),
+}));
+
+const PNG_BASE64 = Buffer.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]).toString("base64");
 
 const RESPONSE_LATENCY_LOG_PATTERN = /\[verbose\] response latency_ms=\d+\n/;
 
@@ -188,6 +197,42 @@ describe("createTargetAction", () => {
     ).rejects.toThrow("process.exit:4");
 
     expect(exitCode).toBe(4);
+  });
+
+  it("writes PNG output when the built body requests headless png", async () => {
+    const scrape = vi.fn().mockResolvedValue({
+      results: [{ content: PNG_BASE64 }],
+    });
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { scrape },
+    } as never);
+
+    const universal = new Command("universal")
+      .argument("<input>")
+      .option("--headless <value>")
+      .action(createTargetAction("universal", BundledSchema.shared));
+    attachScrapeOutputOptions(universal);
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(universal);
+
+    await program.parseAsync(
+      [
+        "universal",
+        "https://example.com",
+        "--headless",
+        "png",
+        "--token",
+        "test-token",
+      ],
+      { from: "user" }
+    );
+
+    expect(writeBinaryOutput).toHaveBeenCalledTimes(1);
+    const [buffer] = vi.mocked(writeBinaryOutput).mock.calls[0] ?? [];
+    expect(Buffer.isBuffer(buffer)).toBe(true);
+    expect(stdout).toBeUndefined();
   });
 
   it("handles targets without a primary input argument", async () => {

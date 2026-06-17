@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { CliUsageError, handleCliError } from "./handle-cli-error.js";
+import { CliUsageError } from "../errors/cli-usage-error.js";
+import { handleCliError } from "./handle-cli-error.js";
 import { resolveOutputFilePath } from "./resolve-output-file.js";
 
 export const BINARY_TTY_ERROR =

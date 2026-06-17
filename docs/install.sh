@@ -5,6 +5,11 @@ PACKAGE_NAME="@decodo/cli"
 COMMAND_NAME="decodo"
 MIN_NODE_MAJOR=18
 
+ORIG_PATH=""
+USER_PREFIX_BIN=""
+PATH_ACTIVATION_REQUIRED=0
+ACTIVATION_RC_FILE=""
+
 if [ -t 1 ]; then
   RED='\033[0;31m'
   GREEN='\033[0;32m'
@@ -19,7 +24,127 @@ fi
 
 info() { printf "${BLUE}${BOLD}==>${RESET} %s\n" "$1"; }
 warn() { printf "${YELLOW}${BOLD}warning:${RESET} %s\n" "$1"; }
+success() { printf "${GREEN}${BOLD}%s${RESET}\n" "$1"; }
 error() { printf "${RED}${BOLD}error:${RESET} %s\n" "$1" >&2; exit 1; }
+
+path_contains() {
+  dir="$1"
+  path_list="$2"
+  case ":${path_list}:" in
+    *":${dir}:"*) return 0 ;;
+  esac
+  return 1
+}
+
+shell_rc_file() {
+  shell_name=$(basename "${SHELL:-/bin/sh}")
+  case "$shell_name" in
+    zsh) printf '%s' "$HOME/.zshrc" ;;
+    bash) printf '%s' "$HOME/.bashrc" ;;
+    fish) printf '%s' "$HOME/.config/fish/config.fish" ;;
+    *) printf '%s' "$HOME/.profile" ;;
+  esac
+}
+
+resolve_install_bin() {
+  if [ -n "$USER_PREFIX_BIN" ]; then
+    printf '%s' "$USER_PREFIX_BIN"
+    return 0
+  fi
+  npm_prefix=$(npm prefix -g 2>/dev/null) || error "Could not determine npm global bin directory."
+  printf '%s/bin' "$npm_prefix"
+}
+
+ensure_path() {
+  dir="$1"
+
+  if path_contains "$dir" "$ORIG_PATH"; then
+    return 0
+  fi
+
+  rc_file=$(shell_rc_file)
+  ACTIVATION_RC_FILE="$rc_file"
+  PATH_ACTIVATION_REQUIRED=1
+
+  if [ -f "$rc_file" ] && grep -Fq "$dir" "$rc_file" 2>/dev/null; then
+    warn "$dir is in $rc_file but not active in this shell."
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$rc_file")"
+  printf '\n' >> "$rc_file"
+  shell_name=$(basename "${SHELL:-/bin/sh}")
+  if [ "$shell_name" = "fish" ]; then
+    printf 'set -gx PATH "%s" $PATH\n' "$dir" >> "$rc_file"
+  else
+    printf 'export PATH="%s:$PATH"\n' "$dir" >> "$rc_file"
+  fi
+
+  warn "$dir was not in your PATH. Added it to $rc_file"
+}
+
+command_prefix() {
+  bin_dir="$1"
+  if [ "$PATH_ACTIVATION_REQUIRED" = 1 ]; then
+    printf '%s/%s' "$bin_dir" "$COMMAND_NAME"
+  else
+    printf '%s' "$COMMAND_NAME"
+  fi
+}
+
+print_activation_steps() {
+  bin_dir="$1"
+  if [ "$PATH_ACTIVATION_REQUIRED" != 1 ]; then
+    return 0
+  fi
+  printf '\n'
+  warn "Run this now: source ${ACTIVATION_RC_FILE}"
+  warn "Or: export PATH=\"${bin_dir}:\$PATH\""
+}
+
+offer_setup() {
+  bin_dir="$1"
+  decodo_bin="${bin_dir}/${COMMAND_NAME}"
+
+  if ! [ -f "$decodo_bin" ]; then
+    error "Could not find ${decodo_bin} after install."
+  fi
+
+  if ! [ -t 0 ] || ! [ -t 1 ]; then
+    cmd=$(command_prefix "$bin_dir")
+    printf "\nNext step: configure your auth token with ${BOLD}%s setup${RESET}\n\n" "$cmd"
+    return 0
+  fi
+
+  printf '\nNext: configure your auth token.\n\n'
+  printf 'Continue with setup? [Y/n] '
+  if ! read -r answer </dev/tty 2>/dev/null; then
+    cmd=$(command_prefix "$bin_dir")
+    printf '\nRun %s setup when you are ready.\n\n' "$cmd"
+    return 0
+  fi
+  printf '\n'
+
+  case "$answer" in
+    [nN]*)
+      cmd=$(command_prefix "$bin_dir")
+      printf 'Run %s setup when you are ready.\n\n' "$cmd"
+      return 0
+      ;;
+  esac
+
+  "$decodo_bin" setup
+}
+
+print_next_steps() {
+  bin_dir="$1"
+  cmd=$(command_prefix "$bin_dir")
+
+  printf 'Get started:\n'
+  printf "  ${BOLD}%s scrape${RESET} https://ip.decodo.com\n" "$cmd"
+  printf "  ${BOLD}%s search${RESET} \"decodo scraping api\"\n" "$cmd"
+  printf "  ${BOLD}%s whoami${RESET}\n\n" "$cmd"
+}
 
 check_platform() {
   case "$(uname -s)" in
@@ -92,6 +217,8 @@ or run the CLI without installing: npx ${PACKAGE_NAME} --help"
 main() {
   printf "\n${BOLD}Decodo CLI Installer${RESET}\n\n"
 
+  ORIG_PATH="$PATH"
+
   check_platform
   NODE_VERSION=$(check_node)
   info "Found Node.js v${NODE_VERSION}"
@@ -102,32 +229,21 @@ main() {
 
   install_package
 
-  if command -v "$COMMAND_NAME" >/dev/null 2>&1; then
-    installed_version=$("$COMMAND_NAME" --version 2>/dev/null || echo "unknown")
-    printf "\n${GREEN}${BOLD}Success!${RESET} ${PACKAGE_NAME} ${installed_version} is installed.\n"
+  BIN_DIR=$(resolve_install_bin)
+  ensure_path "$BIN_DIR"
+
+  installed_version=$("${BIN_DIR}/${COMMAND_NAME}" --version 2>/dev/null || echo "unknown")
+  printf '\n'
+  success "Success! ${PACKAGE_NAME} ${installed_version} is installed."
+
+  if [ "$PATH_ACTIVATION_REQUIRED" = 1 ]; then
+    print_activation_steps "$BIN_DIR"
   else
-    printf "\n${GREEN}${BOLD}Installed!${RESET} You may need to restart your shell or add the npm global bin directory to your PATH.\n"
-    if [ -z "$USER_PREFIX_BIN" ]; then
-      npm_prefix=$(npm config get prefix 2>/dev/null) || true
-      npm_bin="${npm_prefix:+$npm_prefix/bin}"
-      if [ -n "$npm_bin" ] && ! echo "$PATH" | tr ':' '\n' | grep -qx "$npm_bin"; then
-        warn "${npm_bin} is not in your PATH. Add it with:"
-        printf "  export PATH=\"%s:\$PATH\"\n\n" "$npm_bin"
-      fi
-    fi
+    success "Ready to use — decodo is on your PATH."
   fi
 
-  if [ -n "$USER_PREFIX_BIN" ]; then
-    printf "\nThe CLI was installed to ${BOLD}%s${RESET}.\n" "$USER_PREFIX_BIN"
-    printf "Add it to your PATH permanently by appending this line to your shell profile (e.g. ~/.zshrc or ~/.bashrc):\n"
-    printf "  ${BOLD}export PATH=\"%s:\$PATH\"${RESET}\n" "$USER_PREFIX_BIN"
-  fi
-
-  printf "\nNext step: configure your auth token with ${BOLD}decodo setup${RESET}\n"
-  printf "Get started:\n"
-  printf "  ${BOLD}decodo scrape${RESET} https://ip.decodo.com\n"
-  printf "  ${BOLD}decodo search${RESET} \"decodo scraping api\"\n"
-  printf "  ${BOLD}decodo whoami${RESET}\n\n"
+  offer_setup "$BIN_DIR"
+  print_next_steps "$BIN_DIR"
 }
 
 main

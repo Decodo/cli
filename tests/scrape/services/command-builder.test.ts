@@ -9,6 +9,8 @@ import { snakeToCamel } from "../../../src/scrape/services/naming.js";
 
 const schema = BundledSchema.shared;
 
+const INVALID_JSON_FLAG_ERROR = /--headers expects valid JSON/;
+
 describe("configureTargetCommand", () => {
   it("adds a required input argument for google_search", () => {
     const command = new Command("google-search");
@@ -85,6 +87,46 @@ describe("buildScrapeBody", () => {
       parse: true,
       markdown: false,
     });
+  });
+
+  it("registers object/array flags with a JSON-parsing argParser", () => {
+    const command = new Command("universal");
+    command.exitOverride();
+    configureTargetCommand(command, "universal", schema);
+    command.action(() => undefined);
+
+    const headersOption = command.options.find(
+      (opt) => opt.long === "--headers"
+    );
+    expect(headersOption?.flags).toContain("<json>");
+
+    command.parse(
+      [
+        "https://example.com",
+        "--headers",
+        '{"X-Test":"1"}',
+        "--successful-status-codes",
+        "[200,204]",
+      ],
+      { from: "user" }
+    );
+
+    const opts = command.opts();
+    expect(opts.headers).toEqual({ "X-Test": "1" });
+    expect(opts.successfulStatusCodes).toEqual([200, 204]);
+  });
+
+  it("rejects invalid JSON for object/array flags as a usage error", () => {
+    const command = new Command("universal");
+    command.exitOverride();
+    configureTargetCommand(command, "universal", schema);
+    command.action(() => undefined);
+
+    expect(() =>
+      command.parse(["https://example.com", "--headers", "not-json"], {
+        from: "user",
+      })
+    ).toThrow(INVALID_JSON_FLAG_ERROR);
   });
 
   it("does not override explicit parse: false from options", () => {

@@ -8,14 +8,38 @@ import {
 import { PLAYGROUND_URL } from "../../auth/constants.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { EXIT } from "../constants.js";
+import { CliUsageError } from "../errors/cli-usage-error.js";
 
 const EXIT_SIGNAL_PREFIX = "process.exit:";
 
-export class CliUsageError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "CliUsageError";
+const NETWORK_ERROR_CODES = new Set([
+  "ENOTFOUND",
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ETIMEDOUT",
+  "EAI_AGAIN",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "EPIPE",
+]);
+
+function findNetworkCause(
+  err: unknown
+): { code: string; message: string } | undefined {
+  const seen = new Set<unknown>();
+  let current: unknown = err;
+
+  while (current && typeof current === "object" && !seen.has(current)) {
+    seen.add(current);
+    const code = (current as { code?: unknown }).code;
+    if (typeof code === "string" && NETWORK_ERROR_CODES.has(code)) {
+      const message = (current as { message?: unknown }).message;
+      return { code, message: typeof message === "string" ? message : code };
+    }
+    current = (current as { cause?: unknown }).cause;
   }
+
+  return;
 }
 
 export function resolveCliExitCode(err: unknown): number {
@@ -40,6 +64,10 @@ export function resolveCliExitCode(err: unknown): number {
   }
 
   if (err instanceof DecodoError) {
+    return EXIT.NETWORK;
+  }
+
+  if (findNetworkCause(err)) {
     return EXIT.NETWORK;
   }
 
@@ -103,6 +131,11 @@ export function handleCliError(
   const exitCode = resolveCliExitCode(err);
 
   console.error(`Error: ${message}`);
+
+  const networkCause = findNetworkCause(err);
+  if (networkCause) {
+    console.error(`Cause: ${networkCause.code} (${networkCause.message})`);
+  }
 
   if (err instanceof ValidationError) {
     const details = extractValidationDetails(err);

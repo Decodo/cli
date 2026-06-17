@@ -1,5 +1,11 @@
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
+import { CliUsageError } from "../errors/cli-usage-error.js";
+
+const CHAR_ETX = 3;
+const CHAR_EOT = 4;
+const CHAR_DEL = 127;
+const CHAR_BACKSPACE = 8;
 
 interface HiddenPromptState {
   cleanup: () => void;
@@ -9,10 +15,19 @@ interface HiddenPromptState {
 }
 
 function handleHiddenPromptChar(char: string, state: HiddenPromptState): void {
-  if (char === "\u0003") {
+  const code = char.charCodeAt(0);
+
+  if (code === CHAR_ETX) {
     state.cleanup();
     stdout.write("\n");
     state.reject(new Error("Cancelled."));
+    return;
+  }
+
+  if (code === CHAR_EOT) {
+    state.cleanup();
+    stdout.write("\n");
+    state.reject(new CliUsageError("No auth token provided on stdin."));
     return;
   }
 
@@ -23,7 +38,7 @@ function handleHiddenPromptChar(char: string, state: HiddenPromptState): void {
     return;
   }
 
-  if (char === "\u007f" || char === "\b") {
+  if (code === CHAR_DEL || code === CHAR_BACKSPACE) {
     if (state.input.length > 0) {
       state.input = state.input.slice(0, -1);
       stdout.write("\b \b");
@@ -34,14 +49,23 @@ function handleHiddenPromptChar(char: string, state: HiddenPromptState): void {
   state.input += char;
 }
 
+async function promptViaReadline(message: string): Promise<string> {
+  const rl = createInterface({ input: stdin, output: stdout });
+  try {
+    return await new Promise<string>((resolve, reject) => {
+      rl.question(message).then((answer) => resolve(answer.trim()), reject);
+      rl.once("close", () => {
+        reject(new CliUsageError("No auth token provided on stdin."));
+      });
+    });
+  } finally {
+    rl.close();
+  }
+}
+
 export async function promptHidden(message: string): Promise<string> {
   if (!stdin.isTTY) {
-    const rl = createInterface({ input: stdin, output: stdout });
-    try {
-      return (await rl.question(message)).trim();
-    } finally {
-      rl.close();
-    }
+    return await promptViaReadline(message);
   }
 
   stdout.write(message);
@@ -64,12 +88,20 @@ export async function promptHidden(message: string): Promise<string> {
       }
     };
 
+    const onEnd = (): void => {
+      state.cleanup();
+      stdout.write("\n");
+      reject(new CliUsageError("No auth token provided on stdin."));
+    };
+
     state.cleanup = (): void => {
       stdin.setRawMode(false);
       stdin.pause();
       stdin.removeListener("data", onData);
+      stdin.removeListener("end", onEnd);
     };
 
     stdin.on("data", onData);
+    stdin.on("end", onEnd);
   });
 }
