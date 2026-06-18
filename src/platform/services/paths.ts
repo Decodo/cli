@@ -8,13 +8,11 @@ export function getConfigDir(): string {
     return override;
   }
 
-  return join(homedir(), ".config", "decodo");
-}
+  const xdgConfigHome = process.env.XDG_CONFIG_HOME;
 
-export function getLegacyConfigDir(): string | undefined {
-  if (process.platform !== "darwin") {
-    return;
+  if (xdgConfigHome) {
+    return join(xdgConfigHome, "decodo");
   }
 
-  return join(homedir(), "Library", "Preferences", "decodo");
+  return join(homedir(), ".config", "decodo");
 }

@@ -1,9 +1,6 @@
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import {
-  getConfigDir,
-  getLegacyConfigDir,
-} from "../../platform/services/paths.js";
+import { getConfigDir } from "../../platform/services/paths.js";
 import { ConfigParseError } from "../errors/config-parse-error.js";
 import type { DecodoConfig } from "../types/config.js";
 
@@ -34,9 +31,9 @@ function parseConfig(
   return;
 }
 
-async function readConfigAt(
-  configPath: string
-): Promise<DecodoConfig | undefined> {
+export async function readConfig(): Promise<DecodoConfig | undefined> {
+  const configPath = getConfigPath();
+
   try {
     const raw = await readFile(configPath, "utf8");
 
@@ -48,31 +45,6 @@ async function readConfigAt(
 
     throw err;
   }
-}
-
-export async function readConfig(): Promise<DecodoConfig | undefined> {
-  const configPath = getConfigPath();
-  const config = await readConfigAt(configPath);
-
-  if (config) {
-    return config;
-  }
-
-  const legacyDir = getLegacyConfigDir();
-
-  if (!legacyDir) {
-    return;
-  }
-
-  const legacyConfig = await readConfigAt(join(legacyDir, CONFIG_FILE));
-
-  if (!legacyConfig) {
-    return;
-  }
-
-  await writeConfig(legacyConfig);
-
-  return legacyConfig;
 }
 
 export async function writeConfig(config: DecodoConfig): Promise<void> {
