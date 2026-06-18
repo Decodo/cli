@@ -62,4 +62,59 @@ describe("auth config", () => {
     await clearConfig();
     expect(await readConfig()).toBeUndefined();
   });
+
+  it("migrates config from legacy macOS path when new path is missing", async () => {
+    const { mkdir, mkdtemp, readFile, rm, writeFile } = await import(
+      "node:fs/promises"
+    );
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const originalPlatform = process.platform;
+    const originalHome = process.env.HOME;
+    const originalConfigHome = process.env.DECODO_CONFIG_HOME;
+
+    const fakeHome = await mkdtemp(join(tmpdir(), "decodo-home-"));
+    process.env.HOME = fakeHome;
+    delete process.env.DECODO_CONFIG_HOME;
+    Object.defineProperty(process, "platform", { value: "darwin" });
+    vi.resetModules();
+
+    const configDir = join(fakeHome, ".config", "decodo");
+    const legacyDir = join(fakeHome, "Library", "Preferences", "decodo");
+    const legacyPath = join(legacyDir, "config.json");
+
+    await mkdir(legacyDir, { recursive: true });
+    await writeFile(
+      legacyPath,
+      `${JSON.stringify({ authToken: "legacy-token" }, null, 2)}\n`,
+      "utf8"
+    );
+
+    try {
+      const { readConfig } = await import(
+        "../../../src/auth/services/config.js"
+      );
+
+      expect(await readConfig()).toEqual({
+        authToken: "legacy-token",
+      });
+      expect(await readFile(join(configDir, "config.json"), "utf8")).toContain(
+        "legacy-token"
+      );
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform });
+      if (originalHome === undefined) {
+        delete process.env.HOME;
+      } else {
+        process.env.HOME = originalHome;
+      }
+      if (originalConfigHome === undefined) {
+        delete process.env.DECODO_CONFIG_HOME;
+      } else {
+        process.env.DECODO_CONFIG_HOME = originalConfigHome;
+      }
+      await rm(fakeHome, { recursive: true, force: true });
+      vi.resetModules();
+    }
+  });
 });

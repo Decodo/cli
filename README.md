@@ -257,7 +257,7 @@ decodo scrape https://example.com --full --format ndjson
 | Variable | Description |
 | --- | --- |
 | `DECODO_AUTH_TOKEN` | Basic auth token (overrides saved config, below `--token`) |
-| `DECODO_CONFIG_HOME` | Override config directory (default: OS-specific `env-paths` location) |
+| `DECODO_CONFIG_HOME` | Override config directory (default: `~/.config/decodo`) |
 
 ## Exit codes
 

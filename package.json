@@ -1,6 +1,6 @@
 {
   "name": "@decodo/cli",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Official CLI for the Decodo APIs",
   "license": "MIT",
   "type": "module",
@@ -38,8 +38,7 @@
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
     "@decodo/sdk-ts": "^2.1.2",
-    "commander": "^14.0.0",
-    "env-paths": "^3.0.0"
+    "commander": "^14.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
