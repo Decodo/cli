@@ -58,6 +58,7 @@ function addPropertyOption(
 
   if (propertySchema.type === "boolean") {
     command.option(`--${kebabFlag}`, help);
+    command.option(`--no-${kebabFlag}`, help);
     return;
   }
 
