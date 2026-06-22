@@ -44,6 +44,16 @@ describe("configureTargetCommand", () => {
     expect(config.primaryField).toBe("product_id");
     expect(command.registeredArguments).toHaveLength(1);
   });
+
+  it("registers a --no-<flag> negation alongside boolean options", () => {
+    const command = new Command("universal");
+    configureTargetCommand(command, "universal", schema);
+
+    expect(command.options.some((opt) => opt.long === "--markdown")).toBe(true);
+    expect(command.options.some((opt) => opt.long === "--no-markdown")).toBe(
+      true
+    );
+  });
 });
 
 describe("buildScrapeBody", () => {
@@ -149,5 +159,43 @@ describe("buildScrapeBody", () => {
       parse: false,
       markdown: false,
     });
+  });
+
+  it("lets --no-markdown send markdown: false for universal", () => {
+    const command = new Command("universal");
+    command.exitOverride();
+    const config = configureTargetCommand(command, "universal", schema);
+    command.action(() => undefined);
+
+    command.parse(["https://example.com", "--no-markdown"], { from: "user" });
+    expect(command.opts().markdown).toBe(false);
+
+    const body = buildScrapeBody(
+      "universal",
+      "https://example.com",
+      command.opts(),
+      config,
+      schema
+    );
+    expect(body.markdown).toBe(false);
+  });
+
+  it("keeps the markdown default when the flag is omitted for universal", () => {
+    const command = new Command("universal");
+    command.exitOverride();
+    const config = configureTargetCommand(command, "universal", schema);
+    command.action(() => undefined);
+
+    command.parse(["https://example.com"], { from: "user" });
+    expect(command.opts().markdown).toBeUndefined();
+
+    const body = buildScrapeBody(
+      "universal",
+      "https://example.com",
+      command.opts(),
+      config,
+      schema
+    );
+    expect(body.markdown).toBe(true);
   });
 });
