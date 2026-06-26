@@ -133,6 +133,47 @@ describe("writeScrapeResponse", () => {
     expect(stderr).toEqual([]);
   });
 
+  it("throws on a failed content envelope without writing to stdout", () => {
+    const response = {
+      results: [
+        {
+          content: {
+            status: "failed",
+            status_code: 12_002,
+            message: "blocked",
+          },
+        },
+      ],
+    } as unknown as SyncResponse;
+
+    expect(() => writeScrapeResponse(response, { options: {} })).toThrow(
+      "blocked"
+    );
+    expect(written).toBeUndefined();
+  });
+
+  it("throws on an HTTP error status even with --full", () => {
+    const response = {
+      results: [{ content: { results: [] }, status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    expect(() =>
+      writeScrapeResponse(response, { options: { full: true } })
+    ).toThrow("404");
+    expect(written).toBeUndefined();
+  });
+
+  it("emits content and warns when an HTTP error still returned a body", () => {
+    const response = {
+      results: [{ content: "<html>404 Not Found</html>", status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    writeScrapeResponse(response, { options: {} });
+
+    expect(written).toBe("<html>404 Not Found</html>\n");
+    expect(stderr.join("\n")).toContain("HTTP 404");
+  });
+
   it("refuses TTY stdout for binary png without -o", () => {
     Object.defineProperty(process.stdout, "isTTY", {
       value: true,

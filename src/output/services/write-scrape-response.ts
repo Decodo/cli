@@ -3,6 +3,10 @@ import { writeBinaryOutput } from "../../platform/services/write-binary.js";
 import { extractPngFromResponse } from "../../scrape/services/extract-png.js";
 import { defaultScreenshotFilename } from "../../scrape/services/screenshot-output-filename.js";
 import type { WriteScrapeResponseContext } from "../types/write-scrape-response.js";
+import {
+  detectDegradedStatus,
+  detectScrapeFailure,
+} from "./detect-scrape-failure.js";
 import { extractPayload } from "./extract-payload.js";
 import { renderPayload } from "./render-output.js";
 import { resolvePrettyIndent } from "./resolve-pretty.js";
@@ -14,6 +18,18 @@ export function writeScrapeResponse(
   context: WriteScrapeResponseContext
 ): void {
   const { options } = context;
+
+  const failure = detectScrapeFailure(response);
+  if (failure) {
+    throw failure;
+  }
+
+  const degradedStatus = detectDegradedStatus(response);
+  if (degradedStatus !== undefined) {
+    console.error(
+      `Warning: target returned HTTP ${degradedStatus}; emitting the content it returned`
+    );
+  }
 
   if (context.binary?.kind === "png") {
     writeBinaryOutput(extractPngFromResponse(response), {

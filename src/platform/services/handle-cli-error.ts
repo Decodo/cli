@@ -7,6 +7,7 @@ import {
 } from "@decodo/sdk-ts";
 import { PLAYGROUND_URL } from "../../auth/constants.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
+import { ScrapeFailedError } from "../../output/errors/scrape-failed-error.js";
 import { EXIT } from "../constants.js";
 import { CliUsageError } from "../errors/cli-usage-error.js";
 
@@ -63,7 +64,14 @@ export function resolveCliExitCode(err: unknown): number {
     return EXIT.TIMEOUT;
   }
 
+  if (err instanceof ScrapeFailedError) {
+    return EXIT.NETWORK;
+  }
+
   if (err instanceof DecodoError) {
+    if (err.statusCode === 400 || err.statusCode === 422) {
+      return EXIT.VALIDATION;
+    }
     return EXIT.NETWORK;
   }
 
