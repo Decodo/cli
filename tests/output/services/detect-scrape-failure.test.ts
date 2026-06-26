@@ -1,6 +1,9 @@
 import type { SyncResponse } from "@decodo/sdk-ts";
 import { describe, expect, it } from "vitest";
-import { detectScrapeFailure } from "../../../src/output/services/detect-scrape-failure.js";
+import {
+  detectDegradedStatus,
+  detectScrapeFailure,
+} from "../../../src/output/services/detect-scrape-failure.js";
 
 describe("detectScrapeFailure", () => {
   it("returns undefined for a successful response", () => {
@@ -65,6 +68,14 @@ describe("detectScrapeFailure", () => {
     expect(detectScrapeFailure(response)).toBeUndefined();
   });
 
+  it("does not flag an HTTP error that still returned a body", () => {
+    const response = {
+      results: [{ content: "<html>404 Not Found</html>", status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    expect(detectScrapeFailure(response)).toBeUndefined();
+  });
+
   it("returns the first failure across multiple results", () => {
     const response = {
       results: [
@@ -80,5 +91,31 @@ describe("detectScrapeFailure", () => {
     } as unknown as SyncResponse;
 
     expect(detectScrapeFailure(response)?.message).toBe("second failed");
+  });
+});
+
+describe("detectDegradedStatus", () => {
+  it("returns undefined for a successful response", () => {
+    const response = {
+      results: [{ content: "<html>ok</html>", status_code: 200 }],
+    } as unknown as SyncResponse;
+
+    expect(detectDegradedStatus(response)).toBeUndefined();
+  });
+
+  it("returns the status code when an HTTP error still returned a body", () => {
+    const response = {
+      results: [{ content: "<html>404 Not Found</html>", status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    expect(detectDegradedStatus(response)).toBe(404);
+  });
+
+  it("returns undefined when an HTTP error returned no usable content", () => {
+    const response = {
+      results: [{ content: { results: [] }, status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    expect(detectDegradedStatus(response)).toBeUndefined();
   });
 });

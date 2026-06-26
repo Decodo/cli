@@ -163,6 +163,17 @@ describe("writeScrapeResponse", () => {
     expect(written).toBeUndefined();
   });
 
+  it("emits content and warns when an HTTP error still returned a body", () => {
+    const response = {
+      results: [{ content: "<html>404 Not Found</html>", status_code: 404 }],
+    } as unknown as SyncResponse;
+
+    writeScrapeResponse(response, { options: {} });
+
+    expect(written).toBe("<html>404 Not Found</html>\n");
+    expect(stderr.join("\n")).toContain("HTTP 404");
+  });
+
   it("refuses TTY stdout for binary png without -o", () => {
     Object.defineProperty(process.stdout, "isTTY", {
       value: true,

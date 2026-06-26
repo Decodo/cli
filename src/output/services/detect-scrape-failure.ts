@@ -39,9 +39,37 @@ function failureFromContent(content: unknown): ScrapeFailedError | undefined {
   return new ScrapeFailedError(message, statusCode);
 }
 
+function hasUsableContent(content: unknown): boolean {
+  if (content === undefined || content === null) {
+    return false;
+  }
+
+  if (typeof content === "string") {
+    return content.trim().length > 0;
+  }
+
+  if (Array.isArray(content)) {
+    return content.length > 0;
+  }
+
+  if (typeof content === "object") {
+    const envelope = content as Record<string, unknown>;
+    if (Array.isArray(envelope.results)) {
+      return envelope.results.length > 0;
+    }
+    return Object.keys(envelope).length > 0;
+  }
+
+  return true;
+}
+
 function failureFromStatus(entry: ResultEntry): ScrapeFailedError | undefined {
   const { status_code: statusCode } = entry;
   if (typeof statusCode !== "number" || statusCode < HTTP_ERROR_THRESHOLD) {
+    return;
+  }
+
+  if (hasUsableContent(entry.content)) {
     return;
   }
 
@@ -61,6 +89,23 @@ export function detectScrapeFailure(
       failureFromContent(entry.content) ?? failureFromStatus(entry);
     if (failure) {
       return failure;
+    }
+  }
+
+  return;
+}
+
+export function detectDegradedStatus(
+  response: SyncResponse
+): number | undefined {
+  for (const entry of response.results) {
+    const { status_code: statusCode } = entry;
+    if (
+      typeof statusCode === "number" &&
+      statusCode >= HTTP_ERROR_THRESHOLD &&
+      hasUsableContent(entry.content)
+    ) {
+      return statusCode;
     }
   }
 
