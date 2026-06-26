@@ -92,6 +92,26 @@ describe("detectScrapeFailure", () => {
 
     expect(detectScrapeFailure(response)?.message).toBe("second failed");
   });
+
+  it("flags a top-level failure envelope that omits results", () => {
+    const response = {
+      status: "failed",
+      status_code: 613,
+      message: "We were not able to scrape the target.",
+      task_id: "7476155848721478657",
+    } as unknown as SyncResponse;
+
+    const failure = detectScrapeFailure(response);
+
+    expect(failure?.message).toBe("We were not able to scrape the target.");
+    expect(failure?.statusCode).toBe(613);
+  });
+
+  it("does not throw when results is missing", () => {
+    const response = {} as unknown as SyncResponse;
+
+    expect(detectScrapeFailure(response)).toBeUndefined();
+  });
 });
 
 describe("detectDegradedStatus", () => {
@@ -115,6 +135,12 @@ describe("detectDegradedStatus", () => {
     const response = {
       results: [{ content: { results: [] }, status_code: 404 }],
     } as unknown as SyncResponse;
+
+    expect(detectDegradedStatus(response)).toBeUndefined();
+  });
+
+  it("does not throw when results is missing", () => {
+    const response = {} as unknown as SyncResponse;
 
     expect(detectDegradedStatus(response)).toBeUndefined();
   });

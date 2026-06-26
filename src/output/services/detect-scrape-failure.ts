@@ -19,12 +19,12 @@ function readNumber(
   return typeof value === "number" ? value : undefined;
 }
 
-function failureFromContent(content: unknown): ScrapeFailedError | undefined {
-  if (typeof content !== "object" || content === null) {
+function failureFromEnvelope(value: unknown): ScrapeFailedError | undefined {
+  if (typeof value !== "object" || value === null) {
     return;
   }
 
-  const envelope = content as Record<string, unknown>;
+  const envelope = value as Record<string, unknown>;
   if (envelope.status !== "failed") {
     return;
   }
@@ -81,12 +81,21 @@ function failureFromStatus(entry: ResultEntry): ScrapeFailedError | undefined {
   return new ScrapeFailedError(message, statusCode);
 }
 
+function readResults(response: SyncResponse): ResultEntry[] {
+  return Array.isArray(response.results) ? response.results : [];
+}
+
 export function detectScrapeFailure(
   response: SyncResponse
 ): ScrapeFailedError | undefined {
-  for (const entry of response.results) {
+  const topLevelFailure = failureFromEnvelope(response);
+  if (topLevelFailure) {
+    return topLevelFailure;
+  }
+
+  for (const entry of readResults(response)) {
     const failure =
-      failureFromContent(entry.content) ?? failureFromStatus(entry);
+      failureFromEnvelope(entry.content) ?? failureFromStatus(entry);
     if (failure) {
       return failure;
     }
@@ -98,7 +107,7 @@ export function detectScrapeFailure(
 export function detectDegradedStatus(
   response: SyncResponse
 ): number | undefined {
-  for (const entry of response.results) {
+  for (const entry of readResults(response)) {
     const { status_code: statusCode } = entry;
     if (
       typeof statusCode === "number" &&
