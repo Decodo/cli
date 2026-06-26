@@ -7,6 +7,7 @@ import {
 } from "@decodo/sdk-ts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthRequiredError } from "../../../src/auth/errors/auth-required-error.js";
+import { ScrapeFailedError } from "../../../src/output/errors/scrape-failed-error.js";
 import { CliUsageError } from "../../../src/platform/errors/cli-usage-error.js";
 import { handleCliError } from "../../../src/platform/services/handle-cli-error.js";
 
@@ -86,6 +87,28 @@ describe("handleCliError", () => {
 
     expect(() => handleCliError(err)).toThrow("process.exit:7");
     expect(exitCode).toBe(7);
+  });
+
+  it("maps 400 Decodo errors to exit code 4 (validation)", () => {
+    const err = new DecodoError("Validation failed, see documentation", 400);
+
+    expect(() => handleCliError(err)).toThrow("process.exit:4");
+    expect(exitCode).toBe(4);
+  });
+
+  it("maps 422 Decodo errors to exit code 4 (validation)", () => {
+    const err = new DecodoError("Unprocessable entity", 422);
+
+    expect(() => handleCliError(err)).toThrow("process.exit:4");
+    expect(exitCode).toBe(4);
+  });
+
+  it("maps scrape failures to exit code 7 with the API message", () => {
+    const err = new ScrapeFailedError("Trends request was rejected", 613);
+
+    expect(() => handleCliError(err)).toThrow("process.exit:7");
+    expect(exitCode).toBe(7);
+    expect(stderr.join("\n")).toContain("Trends request was rejected");
   });
 
   it("maps syscall-coded network failures in the cause chain to exit code 7", () => {

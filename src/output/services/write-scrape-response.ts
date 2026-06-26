@@ -3,6 +3,7 @@ import { writeBinaryOutput } from "../../platform/services/write-binary.js";
 import { extractPngFromResponse } from "../../scrape/services/extract-png.js";
 import { defaultScreenshotFilename } from "../../scrape/services/screenshot-output-filename.js";
 import type { WriteScrapeResponseContext } from "../types/write-scrape-response.js";
+import { detectScrapeFailure } from "./detect-scrape-failure.js";
 import { extractPayload } from "./extract-payload.js";
 import { renderPayload } from "./render-output.js";
 import { resolvePrettyIndent } from "./resolve-pretty.js";
@@ -14,6 +15,11 @@ export function writeScrapeResponse(
   context: WriteScrapeResponseContext
 ): void {
   const { options } = context;
+
+  const failure = detectScrapeFailure(response);
+  if (failure) {
+    throw failure;
+  }
 
   if (context.binary?.kind === "png") {
     writeBinaryOutput(extractPngFromResponse(response), {
