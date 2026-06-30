@@ -125,10 +125,6 @@ function Get-DecodoBin([string]$BinDir) {
 }
 
 function Get-CommandPrefix([string]$BinDir) {
-  if ($script:PathActivationRequired) {
-    return Get-DecodoBin $BinDir
-  }
-
   return $CommandName
 }
 

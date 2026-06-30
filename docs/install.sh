@@ -9,6 +9,7 @@ ORIG_PATH=""
 USER_PREFIX_BIN=""
 PATH_ACTIVATION_REQUIRED=0
 ACTIVATION_RC_FILE=""
+LINKED_DIR=""
 
 if [ -t 1 ]; then
   RED='\033[0;31m'
@@ -83,13 +84,73 @@ ensure_path() {
   warn "$dir was not in your PATH. Added it to $rc_file"
 }
 
-command_prefix() {
+first_writable_path_dir() {
+  exclude="$1"
+  old_ifs="$IFS"
+  IFS=:
+  set -f
+  set -- $ORIG_PATH
+  set +f
+  IFS="$old_ifs"
+
+  for dir in "$@"; do
+    [ -n "$dir" ] || continue
+    case "$dir" in
+      /*) ;;
+      *) continue ;;
+    esac
+    [ "$dir" = "$exclude" ] && continue
+    if [ -d "$dir" ] && [ -w "$dir" ]; then
+      printf '%s' "$dir"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+link_command() {
   bin_dir="$1"
-  if [ "$PATH_ACTIVATION_REQUIRED" = 1 ]; then
-    printf '%s/%s' "$bin_dir" "$COMMAND_NAME"
-  else
-    printf '%s' "$COMMAND_NAME"
+  dest_dir="$2"
+  src="${bin_dir}/${COMMAND_NAME}"
+  dest="${dest_dir}/${COMMAND_NAME}"
+
+  [ -e "$src" ] || return 1
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    return 1
   fi
+
+  ln -sf "$src" "$dest" 2>/dev/null || return 1
+  return 0
+}
+
+link_command_onto_path() {
+  bin_dir="$1"
+
+  if path_contains "$bin_dir" "$ORIG_PATH"; then
+    return 0
+  fi
+
+  link_dir=$(first_writable_path_dir "$bin_dir") || link_dir=""
+  if [ -n "$link_dir" ] && link_command "$bin_dir" "$link_dir"; then
+    LINKED_DIR="$link_dir"
+    return 0
+  fi
+
+  ensure_path "$bin_dir"
+}
+
+print_rehash_hint() {
+  shell_name=$(basename "${SHELL:-/bin/sh}")
+  case "$shell_name" in
+    zsh | bash)
+      printf "${DIM}If this shell can't find decodo yet, run: hash -r${RESET}\n"
+      ;;
+  esac
+}
+
+command_prefix() {
+  printf '%s' "$COMMAND_NAME"
 }
 
 print_activation_steps() {
@@ -197,10 +258,10 @@ install_package() {
     warn "Global install failed. Falling back to a user-level install."
   else
     warn "No write permission for the npm global directory ($(npm prefix -g 2>/dev/null))."
-    info "Installing ${PACKAGE_NAME} to ${HOME}/.npm-global instead (no sudo needed)..."
   fi
 
-  user_prefix="${HOME}/.npm-global"
+  user_prefix="${HOME}/.local"
+  info "Installing ${PACKAGE_NAME} to ${user_prefix} (no sudo needed)..."
   mkdir -p "$user_prefix"
 
   if ! npm install -g --prefix "$user_prefix" "${PACKAGE_NAME}"; then
@@ -230,7 +291,7 @@ main() {
   install_package
 
   BIN_DIR=$(resolve_install_bin)
-  ensure_path "$BIN_DIR"
+  link_command_onto_path "$BIN_DIR"
 
   installed_version=$("${BIN_DIR}/${COMMAND_NAME}" --version 2>/dev/null || echo "unknown")
   printf '\n'
@@ -238,6 +299,9 @@ main() {
 
   if [ "$PATH_ACTIVATION_REQUIRED" = 1 ]; then
     print_activation_steps "$BIN_DIR"
+  elif [ -n "$LINKED_DIR" ]; then
+    success "Ready to use — decodo is on your PATH (linked into ${LINKED_DIR})."
+    print_rehash_hint
   else
     success "Ready to use — decodo is on your PATH."
   fi
