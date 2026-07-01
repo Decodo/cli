@@ -7,69 +7,54 @@
 <a href="https://dashboard.decodo.com/integrations?utm_source=github&utm_medium=social&utm_campaign=cli"> <img src="https://github.com/user-attachments/assets/a1e52a9e-3da1-4081-b3c6-053aafb8f196"/></a>
 </p>
 
-Scrape websites, search engines, eCommerce platforms, and social media from your terminal or shell
-scripts. The Decodo CLI connects you to the [Decodo Web Scraping API](https://decodo.com) without
-building proxy rotation, parsers, or retry logic from scratch.
+A web scraping CLI for the [Decodo Web Scraping API](https://decodo.com/scraping/web). Scrape websites, search engines, eCommerce platforms, and social media from your terminal without building proxy rotation, JavaScript rendering, anti-bot bypass, or CAPTCHA solving from scratch. Get structured data in JSON, NDJSON, Markdown, or PNG screenshots for shell scripts, CI/CD pipelines, data pipelines, and AI coding agents.
 
-- Structured outputs in JSON, Markdown, NDJSON, and screenshots
-- Server-side JavaScript rendering and anti-bot handling
-- 125M+ IPs across 195+ locations
+- Structured output in JSON, Markdown, NDJSON, and screenshots
+- Server-side JavaScript rendering, anti-bot bypass, and CAPTCHA handling
+- 115M+ residential IPs across 195+ locations
 - Pipe-friendly for `jq`, CI, and coding agents
 
 ## What is the Decodo CLI?
 
-The Decodo CLI is a command-line interface for the Decodo Web Scraping API. It wraps every API
-target as a subcommand and adds shell-native output modes for scripting, automation, and agent
-workflows.
+The Decodo CLI is a web scraping CLI and command-line interface for the Decodo Web Scraping API. It wraps every API target as a subcommand and provides shell-native output modes for structured data extraction, scripting, shell automation, and AI agent workflows.
 
-Instead of maintaining scraping infrastructure, you get a single binary for reliable web data access
-from the terminal.
+Instead of maintaining scraping infrastructure, you get a single binary for reliable web data access from the terminal.
 
 ## Why use the CLI?
 
 Use the CLI when you need web scraping outside an IDE or MCP client:
 
-- **Scripts and CI** — run scrapes in pipelines, cron jobs, and GitHub Actions
-- **Shell pipelines** — pipe results to `jq`, `grep`, or custom tools
-- **Coding agents** — invoke scraping as a subprocess (Cursor, Claude Code, Codex, Windsurf)
-- **Quick terminal access** — one command to scrape, search, or screenshot
+- **Scripts and CI/CD**. Run scrapes in shell scripts, cron jobs, GitHub Actions, and CI/CD pipelines.
+- **Shell pipelines**. Pipe JSON or NDJSON output to `jq`, `grep`, databases, or custom tools.
+- **Coding agents**. Invoke scraping as a subprocess from Cursor, Claude Code, Codex, Gemini CLI, or Windsurf.
+- **Quick terminal access**. Scrape websites, search the web, or capture screenshots with a single command.
 
-For MCP-based scraping inside an IDE, see the [Decodo MCP server](https://github.com/Decodo/mcp-server).
-The CLI is the right tool when you need direct shell access or scripting.
+For MCP-based scraping inside an IDE, see the [Decodo MCP server for IDE-based agent scraping](https://github.com/Decodo/mcp-server). The CLI is the right tool when you need direct shell access, scripting, or automation.
 
 ## Key features
 
-**Web scraping from the terminal, no infrastructure required.** Scrape any website, including
-JavaScript-heavy pages, without handling proxy rotation, CAPTCHA solving, or anti-bot systems.
+- **Web scraping from the terminal, no infrastructure required**. Scrape any website, including JavaScript-heavy pages, without handling proxy rotation, JavaScript rendering, anti-bot bypass, or CAPTCHA solving.
 
-**Structured outputs for automation.** Markdown (human-readable), JSON and NDJSON (pipe-friendly),
-and PNG screenshots — built for scripts, data pipelines, and agent subprocess calls.
+- **Structured output for automation**. Markdown (human-readable), JSON and NDJSON (pipe-friendly), and PNG screenshots built for scripts, data pipelines, and AI agent subprocesses.
 
-**Built-in support for popular targets.** Tier-1 commands for scrape, search, and screenshot, plus
-schema-driven subcommands for Google and Bing, Amazon, Walmart, and Target, Reddit, TikTok, and
-YouTube, and more. Run `decodo targets` to list everything available.
+- **Built-in support for popular targets**. Tier-1 commands for scrape, search, and screenshot, plus schema-driven subcommands for Google Search and Bing, Amazon, Walmart, and Target, Reddit, TikTok, YouTube, and more. Run `decodo targets` to list everything available.
 
-**Global proxy infrastructure.** 125M+ residential IPs, 195+ geo-locations, and a 99.99% success
-rate on even the most protected targets — all via the Decodo API.
+- **Global proxy infrastructure**. 115M+ residential IPs across 195+ locations with IP rotation, geo-targeting, and a 99.99% success rate on even the most protected targets, all via the Decodo Web Scraping API.
 
-**Pipe-friendly by design.** Compact JSON when piped, human-readable output in a TTY, and explicit
-exit codes for auth, validation, rate limits, and API errors.
+- **Pipe-friendly by design**. Compact JSON when piped, human-readable output in a TTY, and explicit exit codes for authentication, validation, rate limits, and API errors.
 
-**Fast time to value.** From API token to first scrape in minutes — install with one command or
-use `npx` with zero setup.
+- **Fast time to value**. From API token to first scrape in minutes. Install with one command or use `npx` with zero setup.
 
 ## Use cases
 
-Use the Decodo CLI when you need web scraping from the shell, structured data extraction in
-automation, reliable access to dynamic websites, or an alternative to building scraping
-infrastructure from scratch. Common scenarios:
+Use the Decodo CLI when you need web scraping from the shell, structured data extraction in automation, reliable access to dynamic websites, or an alternative to building scraping infrastructure from scratch. Common scenarios:
 
-- **Shell scripts and CI** — scrape or search in pipelines without embedding SDK logic
-- **Data pipelines** — stream NDJSON results into `jq`, databases, or downstream tools
-- **Coding agent subprocesses** — let agents call `decodo search` or `decodo scrape` directly
-- **eCommerce intelligence** — query Amazon, Walmart, and Target targets from the terminal
-- **Social media data collection** — gather posts and metadata from Reddit, TikTok, and YouTube
-- **Quick research** — search the web or capture screenshots without leaving the terminal
+- **Shell scripts and CI/CD**. Scrape or search in pipelines without embedding SDK logic.
+- **Data pipelines**. Stream NDJSON results into `jq`, databases, or downstream tools.
+- **Coding agent subprocesses**. Let AI agents call `decodo search` or `decodo scrape` directly.
+- **eCommerce intelligence**. Query Amazon, Walmart, and Target targets from the terminal.
+- **Social media data collection**. Gather posts and metadata from Reddit, TikTok, and YouTube.
+- **SERP monitoring**. Search Google and Bing programmatically with geo-targeting and parsed output.
 
 ## Quick start
 
@@ -231,7 +216,7 @@ Use `decodo <target> --help` for all geo, locale, and target-specific options fr
 
 ## Agent tooling
 
-Coding agents (Cursor, Claude Code, Codex, Gemini CLI, Windsurf) should invoke the CLI as a **shell subprocess**, not embed scraping logic.
+The Decodo CLI is built for AI agent web scraping and agentic workflows. Coding agents such as Cursor, Claude Code, Codex, Gemini CLI, and Windsurf should invoke the CLI as a shell subprocess instead of embedding scraping logic.
 
 **Recommended patterns:**
 
@@ -250,7 +235,11 @@ decodo scrape https://example.com --full --format ndjson
 2. Prefer `--format ndjson --full` when parsing multiple results programmatically.
 3. Use `decodo targets` to discover available target commands.
 4. Use `decodo <target> --help` for schema-accurate flags.
-5. Check exit codes (below) to distinguish auth, usage, and API errors.
+5. Check exit codes to distinguish authentication, usage, and API errors.
+
+### MCP vs. CLI: when to use which
+
+Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeline, or subprocess. For IDE-based agent scraping using the Model Context Protocol, see the [Decodo MCP server for IDE-based agent scraping](https://github.com/Decodo/mcp-server).
 
 ## Environment variables
 
@@ -280,7 +269,7 @@ Run `decodo setup` or export `DECODO_AUTH_TOKEN`.
 
 **`command not found: decodo`**
 
-The [install script](https://decodo.github.io/cli/install.sh) auto-configures PATH and prints a `source` step — re-run it or open a new terminal. You can also use `npx @decodo/cli`.
+The [install script](https://decodo.github.io/cli/install.sh) configures your PATH automatically. If `decodo` isn't available, restart your terminal or re-run the install script. You can also use `npx @decodo/cli`.
 
 **Validation / API errors**
 
@@ -327,15 +316,17 @@ pnpm test
 
 ## Related repositories
 
-[Web Scraping API](https://github.com/Decodo/Web-Scraping-API),
-[Decodo MCP server](https://github.com/Decodo/mcp-server),
-[Decodo OpenClaw skill](https://github.com/Decodo/decodo-openclaw-skill)
+- [Web Scraping API](https://github.com/Decodo/Web-Scraping-API)
+- [Decodo MCP server](https://github.com/Decodo/mcp-server)
+- [Decodo OpenClaw skill](https://github.com/Decodo/decodo-openclaw-skill)
+- [Decodo SDK for TypeScript](https://github.com/Decodo/sdk-ts)
+
 
 ## Try it
 
 Install the CLI and start scraping from your terminal in minutes.
 
-[Start for free](https://dashboard.decodo.com/) | [Docs](https://help.decodo.com/docs/introduction)
+[Start scraping for free](https://dashboard.decodo.com/) | [Web Scraping API documentation](https://help.decodo.com/docs/introduction)
 | [Discord](https://discord.gg/Ja8dqKgvbZ)
 
 ## License
