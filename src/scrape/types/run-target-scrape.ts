@@ -1,13 +1,14 @@
 import type { DecodoSchema } from "@decodo/sdk-ts";
+import type { AuthCredential } from "../../auth/types/credential.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 
 export interface ExecuteScrapeOptions {
   body: Record<string, unknown>;
+  credential: AuthCredential;
   input?: string;
   options: Record<string, unknown>;
   outputContext?: Partial<WriteScrapeResponseContext>;
   schema: DecodoSchema;
-  token: string;
   verbose?: boolean;
 }
 

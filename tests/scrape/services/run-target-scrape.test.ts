@@ -42,7 +42,7 @@ describe("createTargetAction", () => {
     });
 
     vi.mocked(resolveAuthToken).mockResolvedValue({
-      token: "test-token",
+      credential: { kind: "token", value: "test-token" },
       source: "flag",
     });
     vi.spyOn(process, "exit").mockImplementation((code) => {
@@ -93,7 +93,7 @@ describe("createTargetAction", () => {
       markdown: false,
     });
     expect(createDecodoClient).toHaveBeenCalledWith(
-      "test-token",
+      { kind: "token", value: "test-token" },
       BundledSchema.shared
     );
     expect(stdout).toBe('{"ok":true}\n');
@@ -121,7 +121,7 @@ describe("createTargetAction", () => {
       { from: "user" }
     );
 
-    expect(stderr).toContain("[verbose] auth source=flag\n");
+    expect(stderr).toContain("[verbose] auth source=flag kind=token\n");
     expect(stderr).toContain(
       "[verbose] request target=google_search query=coffee\n"
     );

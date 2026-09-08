@@ -1,3 +1,4 @@
 export interface DecodoConfig {
-  authToken: string;
+  apiKey?: string;
+  authToken?: string;
 }

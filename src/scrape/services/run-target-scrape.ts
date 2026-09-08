@@ -18,7 +18,7 @@ import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
 import { formatScrapeRequestLog } from "./format-scrape-request-log.js";
 
 async function executeScrape({
-  token,
+  credential,
   schema,
   body,
   options,
@@ -26,7 +26,7 @@ async function executeScrape({
   input,
   verbose = false,
 }: ExecuteScrapeOptions): Promise<void> {
-  const client = createDecodoClient(token, schema);
+  const client = createDecodoClient(credential, schema);
   const startedAt = Date.now();
   const response = await client.webScrapingApi.scrape(
     body as unknown as ScrapeRequest
@@ -88,9 +88,15 @@ export function createTargetAction(
     const verbose = rootOpts.verbose === true;
 
     try {
-      const auth = await resolveAuthToken({ token: rootOpts.token });
-      verboseLog(verbose, `auth source=${auth.source}`);
-      if (!auth.token) {
+      const auth = await resolveAuthToken({
+        apiKey: rootOpts.apiKey,
+        token: rootOpts.token,
+      });
+      verboseLog(
+        verbose,
+        `auth source=${auth.source} kind=${auth.credential?.kind ?? "none"}`
+      );
+      if (!auth.credential) {
         throw new AuthRequiredError();
       }
 
@@ -102,7 +108,7 @@ export function createTargetAction(
         input
       );
       await executeScrape({
-        token: auth.token,
+        credential: auth.credential,
         schema,
         body,
         options,

@@ -40,6 +40,32 @@ describe("cli", () => {
     expect(output).toContain("-v, --verbose");
   });
 
+  it("hides the api key flag from help", () => {
+    const output = execFileSync(process.execPath, [cliPath, "--help"], {
+      encoding: "utf8",
+    });
+
+    expect(output).not.toContain("--api-key");
+  });
+
+  it("hides the api key flag from setup help", () => {
+    const output = execFileSync(
+      process.execPath,
+      [cliPath, "setup", "--help"],
+      {
+        encoding: "utf8",
+      }
+    );
+
+    expect(output).not.toContain("--api-key");
+  });
+
+  it("accepts the hidden api key flag", () => {
+    const { exitCode } = runCli(["--api-key", "key", "whoami"]);
+
+    expect(exitCode).toBe(0);
+  });
+
   it.each([
     ["unknown flag", ["--bad-flag"], 2],
     ["unknown command", ["nosuchcmd"], 2],

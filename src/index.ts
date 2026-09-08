@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { createCommands } from "./cli/register.js";
 import { configureCommanderExit } from "./cli/services/configure-commander-exit.js";
 import { handleCliError } from "./platform/services/handle-cli-error.js";
@@ -27,6 +27,12 @@ const program = new Command()
   .option(
     "--token <token>",
     "Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)"
+  )
+  .addOption(
+    new Option(
+      "--api-key <key>",
+      "API key (overrides DECODO_API_KEY and saved config)"
+    ).hideHelp()
   );
 
 async function main(): Promise<void> {

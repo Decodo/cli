@@ -8,6 +8,7 @@ async function runWhoami(args: string[]): Promise<void> {
   );
   const program = new Command()
     .option("--token <token>", "global token")
+    .option("--api-key <key>", "global api key")
     .addCommand(whoamiCommand);
   await program.parseAsync(args, { from: "user" });
 }
@@ -15,13 +16,16 @@ async function runWhoami(args: string[]): Promise<void> {
 describe("whoamiCommand", () => {
   let restoreConfigHome: () => void;
   let previousEnvToken: string | undefined;
+  let previousEnvApiKey: string | undefined;
   let exitCode: number | undefined;
   let stdout: string[];
 
   beforeEach(async () => {
     ({ restore: restoreConfigHome } = await isolateConfigHome());
     previousEnvToken = process.env.DECODO_AUTH_TOKEN;
+    previousEnvApiKey = process.env.DECODO_API_KEY;
     delete process.env.DECODO_AUTH_TOKEN;
+    delete process.env.DECODO_API_KEY;
     vi.resetModules();
     exitCode = undefined;
     stdout = [];
@@ -43,6 +47,11 @@ describe("whoamiCommand", () => {
       delete process.env.DECODO_AUTH_TOKEN;
     } else {
       process.env.DECODO_AUTH_TOKEN = previousEnvToken;
+    }
+    if (previousEnvApiKey === undefined) {
+      delete process.env.DECODO_API_KEY;
+    } else {
+      process.env.DECODO_API_KEY = previousEnvApiKey;
     }
     vi.resetModules();
   });
@@ -78,7 +87,26 @@ describe("whoamiCommand", () => {
     expect(stdout).toContain("token: flag...alue");
   });
 
-  it("exits with code 3 when no token is available", async () => {
+  it("prints the api key label for a saved api key", async () => {
+    const { writeConfig } = await import(
+      "../../../src/auth/services/config.js"
+    );
+    await writeConfig({ apiKey: "abcdefghijklmnop" });
+
+    await runWhoami(["whoami"]);
+
+    expect(stdout).toContain("source: config");
+    expect(stdout).toContain("api key: abcd...mnop");
+  });
+
+  it("prints the api key from global --api-key", async () => {
+    await runWhoami(["--api-key", "abcdefghijklmnop", "whoami"]);
+
+    expect(stdout).toContain("source: flag");
+    expect(stdout).toContain("api key: abcd...mnop");
+  });
+
+  it("exits with code 3 when no credential is available", async () => {
     await expect(runWhoami(["whoami"])).rejects.toThrow("process.exit:3");
     expect(exitCode).toBe(3);
   });
