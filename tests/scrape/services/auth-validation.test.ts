@@ -5,6 +5,7 @@ import {
   Target as ScrapeTarget,
 } from "@decodo/sdk-ts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { validateCredential } from "../../../src/scrape/services/auth-validation.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 
@@ -12,8 +13,14 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
   createDecodoClient: vi.fn(),
 }));
 
-const TOKEN_CREDENTIAL = { type: "token", value: "test-token" } as const;
-const API_KEY_CREDENTIAL = { type: "apiKey", value: "test-api-key" } as const;
+const TOKEN_CREDENTIAL = {
+  type: AUTH_TYPE.TOKEN,
+  value: "test-token",
+} as const;
+const API_KEY_CREDENTIAL = {
+  type: AUTH_TYPE.API_KEY,
+  value: "test-api-key",
+} as const;
 
 describe("validateCredential", () => {
   const scrape = vi.fn();
@@ -53,7 +60,7 @@ describe("validateCredential", () => {
     scrape.mockRejectedValue(new AuthenticationError("Username invalid."));
 
     await expect(
-      validateCredential({ type: "token", value: "bad-token" })
+      validateCredential({ type: AUTH_TYPE.TOKEN, value: "bad-token" })
     ).rejects.toThrow(AuthenticationError);
   });
 

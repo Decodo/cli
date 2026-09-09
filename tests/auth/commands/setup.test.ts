@@ -4,6 +4,9 @@ import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 const mockPromptHidden = vi.hoisted(() => vi.fn());
 
+const API_KEY_SHAPED =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
 vi.mock("../../../src/platform/services/prompt-hidden.js", () => ({
   promptHidden: mockPromptHidden,
 }));
@@ -84,6 +87,41 @@ describe("setupCommand", () => {
         }),
       })
     );
+  });
+
+  it("falls back to the opposite auth type when the detected one is rejected", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: "Invalid credentials", status: "failed" }),
+    } as Response);
+
+    await runSetup(["--token", API_KEY_SHAPED]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const { readConfig } = await import("../../../src/auth/services/config.js");
+    expect(await readConfig()).toEqual({ authToken: API_KEY_SHAPED });
+  });
+
+  it("reports the detected type's error when both auth types fail", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: "ORIGINAL-error", status: "failed" }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: "FALLBACK-error", status: "failed" }),
+      } as Response);
+
+    await expect(runSetup(["--token", API_KEY_SHAPED])).rejects.toThrow(
+      "process.exit:3"
+    );
+
+    expect(stderr.join("\n")).toContain("ORIGINAL-error");
+    expect(stderr.join("\n")).not.toContain("FALLBACK-error");
   });
 
   it("does not save config on 401", async () => {

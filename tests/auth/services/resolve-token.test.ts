@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 const BASIC_TOKEN = "VTAwMDAwMDAwMDA6UFdfZXhhbXBsZXNlY3JldA==";
@@ -41,14 +42,14 @@ describe("resolveAuthToken", () => {
     await writeConfig({ authToken: "config-token" });
 
     expect(await resolve({ token: BASIC_TOKEN })).toEqual({
-      credential: { type: "token", value: BASIC_TOKEN },
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
       source: "flag",
     });
   });
 
   it("infers an api key passed through --token", async () => {
     expect(await resolve({ token: API_KEY })).toEqual({
-      credential: { type: "apiKey", value: API_KEY },
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
       source: "flag",
     });
   });
@@ -57,7 +58,7 @@ describe("resolveAuthToken", () => {
     process.env.DECODO_AUTH_TOKEN = API_KEY;
 
     expect(await resolve()).toEqual({
-      credential: { type: "apiKey", value: API_KEY },
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
       source: "env",
     });
   });
@@ -70,7 +71,7 @@ describe("resolveAuthToken", () => {
     await writeConfig({ authToken: "config-token" });
 
     expect(await resolve()).toEqual({
-      credential: { type: "token", value: BASIC_TOKEN },
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
       source: "env",
     });
   });
@@ -82,7 +83,7 @@ describe("resolveAuthToken", () => {
     await writeConfig({ apiKey: BASIC_TOKEN });
 
     expect(await resolve()).toEqual({
-      credential: { type: "apiKey", value: BASIC_TOKEN },
+      credential: { type: AUTH_TYPE.API_KEY, value: BASIC_TOKEN },
       source: "config",
     });
   });
@@ -94,7 +95,7 @@ describe("resolveAuthToken", () => {
     await writeConfig({ authToken: BASIC_TOKEN });
 
     expect(await resolve()).toEqual({
-      credential: { type: "token", value: BASIC_TOKEN },
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
       source: "config",
     });
   });
@@ -115,7 +116,7 @@ describe("resolveAuthToken", () => {
 
   it("trims surrounding whitespace before detecting", async () => {
     expect(await resolve({ token: `  ${API_KEY}\n` })).toEqual({
-      credential: { type: "apiKey", value: API_KEY },
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
       source: "flag",
     });
   });

@@ -5,7 +5,7 @@ import { CliUsageError } from "../../platform/errors/cli-usage-error.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import { promptHidden } from "../../platform/services/prompt-hidden.js";
 import { validateCredential } from "../../scrape/services/auth-validation.js";
-import { PLAYGROUND_URL } from "../constants.js";
+import { AUTH_TYPE, PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";
 import { detectCredentialType } from "../services/detect-credential-type.js";
 import type { DecodoConfig } from "../types/config.js";
@@ -18,11 +18,11 @@ interface SetupOptions {
 }
 
 function oppositeAuthType(type: AuthType): AuthType {
-  return type === "token" ? "apiKey" : "token";
+  return type === AUTH_TYPE.TOKEN ? AUTH_TYPE.API_KEY : AUTH_TYPE.TOKEN;
 }
 
 function toConfig(credential: AuthCredential): DecodoConfig {
-  if (credential.type === "apiKey") {
+  if (credential.type === AUTH_TYPE.API_KEY) {
     return { apiKey: credential.value };
   }
 
@@ -63,18 +63,18 @@ export const setupCommand = new Command("setup")
   .option("--token <value>", "Web Scraping API auth token (non-interactive)")
   .action(async (options: SetupOptions, command) => {
     const rootOpts = getRootOpts(command);
-    const value = (
+    const token = (
       options.token?.trim() ||
       rootOpts.token?.trim() ||
       (await promptHidden(TOKEN_PROMPT))
     ).trim();
 
-    if (!value) {
+    if (!token) {
       handleCliError(new CliUsageError("auth token is required."));
     }
 
     try {
-      const credential = await verifyCredential(value);
+      const credential = await verifyCredential(token);
       await writeConfig(toConfig(credential));
       console.log(`Setup complete. Configuration saved to ${getConfigPath()}`);
     } catch (err) {

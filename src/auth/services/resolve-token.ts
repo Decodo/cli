@@ -1,3 +1,4 @@
+import { AUTH_TYPE } from "../constants.js";
 import type { AuthCredential } from "../types/credential.js";
 import { readConfig } from "./config.js";
 import { detectCredentialType } from "./detect-credential-type.js";
@@ -13,48 +14,40 @@ export interface ResolveAuthOptions {
   token?: string;
 }
 
-function resolveFrom(
-  source: AuthSource,
-  value: string | undefined
-): ResolvedAuth | undefined {
-  const resolved = value?.trim();
-
-  if (!resolved) {
-    return;
-  }
-
-  return {
-    credential: { type: detectCredentialType(resolved), value: resolved },
-    source,
-  };
+function detect(value: string): AuthCredential {
+  return { type: detectCredentialType(value), value };
 }
 
-async function fromConfig(): Promise<ResolvedAuth | undefined> {
+export async function resolveAuthToken(
+  options: ResolveAuthOptions = {}
+): Promise<ResolvedAuth> {
+  const flagToken = options.token?.trim();
+
+  if (flagToken) {
+    return { credential: detect(flagToken), source: "flag" };
+  }
+
+  const envToken = process.env.DECODO_AUTH_TOKEN?.trim();
+
+  if (envToken) {
+    return { credential: detect(envToken), source: "env" };
+  }
+
   const config = await readConfig();
 
   if (config?.authToken) {
     return {
-      credential: { type: "token", value: config.authToken },
+      credential: { type: AUTH_TYPE.TOKEN, value: config.authToken },
       source: "config",
     };
   }
 
   if (config?.apiKey) {
     return {
-      credential: { type: "apiKey", value: config.apiKey },
+      credential: { type: AUTH_TYPE.API_KEY, value: config.apiKey },
       source: "config",
     };
   }
 
-  return;
-}
-
-export async function resolveAuthToken(
-  options: ResolveAuthOptions = {}
-): Promise<ResolvedAuth> {
-  return (
-    resolveFrom("flag", options.token) ??
-    resolveFrom("env", process.env.DECODO_AUTH_TOKEN) ??
-    (await fromConfig()) ?? { credential: undefined, source: "none" }
-  );
+  return { credential: undefined, source: "none" };
 }
