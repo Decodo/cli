@@ -27,7 +27,7 @@ describe("createSearchCommand", () => {
     });
 
     vi.mocked(resolveAuthToken).mockResolvedValue({
-      credential: { kind: "token", value: "test-token" },
+      credential: { type: "token", value: "test-token" },
       source: "flag",
     });
     vi.spyOn(process, "exit").mockImplementation((code) => {

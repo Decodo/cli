@@ -16,7 +16,6 @@ export const whoamiCommand = new Command("whoami")
   .action(async (_options, command) => {
     const rootOpts = getRootOpts(command);
     const { credential, source } = await resolveAuthToken({
-      apiKey: rootOpts.apiKey,
       token: rootOpts.token,
     });
 
@@ -26,6 +25,6 @@ export const whoamiCommand = new Command("whoami")
 
     console.log(`source: ${source}`);
     console.log(
-      `${CREDENTIAL_LABEL[credential.kind]}: ${mask(credential.value, 4, -4)}`
+      `${CREDENTIAL_LABEL[credential.type]}: ${mask(credential.value, 4, -4)}`
     );
   });

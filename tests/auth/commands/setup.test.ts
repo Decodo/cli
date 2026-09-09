@@ -15,7 +15,6 @@ async function runSetup(
   const { setupCommand } = await import("../../../src/auth/commands/setup.js");
   const program = new Command()
     .option("--token <token>", "global token")
-    .option("--api-key <key>", "global api key")
     .addCommand(setupCommand);
   await program.parseAsync([...globalArgs, "setup", ...setupArgs], {
     from: "user",
@@ -65,97 +64,26 @@ describe("setupCommand", () => {
   });
 
   it("saves config on successful validation", async () => {
-    await runSetup(["--token", "valid-token"]);
+    await runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="]);
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "valid-token",
+      authToken: "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ=",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
-  });
-
-  it("saves an api key when --api-key is provided", async () => {
-    await runSetup(["--api-key", "valid-key"]);
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toEqual({
-      apiKey: "valid-key",
-    });
-    expect(stdout.join("\n")).toContain("Setup complete");
-  });
-
-  it("saves an api key from global --api-key", async () => {
-    await runSetup([], ["--api-key", "global-key"]);
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toEqual({
-      apiKey: "global-key",
-    });
-  });
-
-  it("rejects --api-key and --token together", async () => {
-    await expect(
-      runSetup(["--api-key", "setup-key", "--token", "setup-token"])
-    ).rejects.toThrow("process.exit:2");
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toBeUndefined();
-    expect(stderr.join("\n")).toContain(
-      "Provide either --token or --api-key, not both."
-    );
-  });
-
-  it("validates an api key against the data api endpoint", async () => {
-    await runSetup(["--api-key", "valid-key"]);
-
-    expect(fetch).toHaveBeenCalledWith(
-      "https://data.decodo.com/v1/scrape",
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer valid-key",
-        }),
-      })
-    );
   });
 
   it("validates a token against the scraper api endpoint", async () => {
-    await runSetup(["--token", "valid-token"]);
+    await runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="]);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://scraper-api.decodo.com/v2/scrape",
       expect.objectContaining({
         headers: expect.objectContaining({
-          Authorization: "Basic valid-token",
+          Authorization: "Basic VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ=",
         }),
       })
     );
-  });
-
-  it("rejects a global --api-key mixed with a subcommand --token", async () => {
-    await expect(
-      runSetup(["--token", "setup-token"], ["--api-key", "global-key"])
-    ).rejects.toThrow("process.exit:2");
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toBeUndefined();
-  });
-
-  it("rejects a global --token mixed with a subcommand --api-key", async () => {
-    await expect(
-      runSetup(["--api-key", "setup-key"], ["--token", "global-token"])
-    ).rejects.toThrow("process.exit:2");
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toBeUndefined();
-  });
-
-  it("trims surrounding whitespace from a saved api key", async () => {
-    await runSetup(["--api-key", "  spaced-key  "]);
-
-    const { readConfig } = await import("../../../src/auth/services/config.js");
-    expect(await readConfig()).toEqual({
-      apiKey: "spaced-key",
-    });
   });
 
   it("does not save config on 401", async () => {
@@ -175,21 +103,24 @@ describe("setupCommand", () => {
   });
 
   it("saves config when token comes from global --token", async () => {
-    await runSetup([], ["--token", "global-token"]);
+    await runSetup([], ["--token", "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0"]);
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "global-token",
+      authToken: "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
   });
 
   it("prefers setup --token over global --token", async () => {
-    await runSetup(["--token", "setup-token"], ["--token", "global-token"]);
+    await runSetup(
+      ["--token", "VTAwMDAwMDAwMDM6UFdfc2V0dXBzZWNyZXQ="],
+      ["--token", "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0"]
+    );
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "setup-token",
+      authToken: "VTAwMDAwMDAwMDM6UFdfc2V0dXBzZWNyZXQ=",
     });
   });
 
@@ -232,9 +163,9 @@ describe("setupCommand", () => {
       }),
     } as Response);
 
-    await expect(runSetup(["--token", "valid-token"])).rejects.toThrow(
-      "process.exit:5"
-    );
+    await expect(
+      runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="])
+    ).rejects.toThrow("process.exit:5");
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toBeUndefined();
@@ -243,14 +174,16 @@ describe("setupCommand", () => {
   });
 
   it("prompts for token interactively when no flags are provided", async () => {
-    mockPromptHidden.mockResolvedValue("prompted-token");
+    mockPromptHidden.mockResolvedValue(
+      "VTAwMDAwMDAwMDQ6UFdfcHJvbXB0ZWRzZWNyZXQ="
+    );
 
     await runSetup([]);
 
     expect(mockPromptHidden).toHaveBeenCalledOnce();
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "prompted-token",
+      authToken: "VTAwMDAwMDAwMDQ6UFdfcHJvbXB0ZWRzZWNyZXQ=",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
   });

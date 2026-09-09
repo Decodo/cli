@@ -1,6 +1,6 @@
 export type AuthType = "token" | "apiKey";
 
 export interface AuthCredential {
-  kind: AuthType;
+  type: AuthType;
   value: string;
 }

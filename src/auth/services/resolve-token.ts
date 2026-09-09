@@ -1,7 +1,6 @@
-import { CliUsageError } from "../../platform/errors/cli-usage-error.js";
-import { AMBIGUOUS_CREDENTIAL_MESSAGE } from "../constants.js";
 import type { AuthCredential } from "../types/credential.js";
 import { readConfig } from "./config.js";
+import { detectCredentialType } from "./detect-credential-type.js";
 
 export type AuthSource = "flag" | "env" | "config" | "none";
 
@@ -11,25 +10,40 @@ export interface ResolvedAuth {
 }
 
 export interface ResolveAuthOptions {
-  apiKey?: string;
   token?: string;
 }
 
 function resolveFrom(
   source: AuthSource,
-  apiKey: string | undefined,
-  token: string | undefined
+  value: string | undefined
 ): ResolvedAuth | undefined {
-  const resolvedToken = token?.trim();
+  const resolved = value?.trim();
 
-  if (resolvedToken) {
-    return { credential: { kind: "token", value: resolvedToken }, source };
+  if (!resolved) {
+    return;
   }
 
-  const resolvedApiKey = apiKey?.trim();
+  return {
+    credential: { type: detectCredentialType(resolved), value: resolved },
+    source,
+  };
+}
 
-  if (resolvedApiKey) {
-    return { credential: { kind: "apiKey", value: resolvedApiKey }, source };
+async function fromConfig(): Promise<ResolvedAuth | undefined> {
+  const config = await readConfig();
+
+  if (config?.authToken) {
+    return {
+      credential: { type: "token", value: config.authToken },
+      source: "config",
+    };
+  }
+
+  if (config?.apiKey) {
+    return {
+      credential: { type: "apiKey", value: config.apiKey },
+      source: "config",
+    };
   }
 
   return;
@@ -38,32 +52,9 @@ function resolveFrom(
 export async function resolveAuthToken(
   options: ResolveAuthOptions = {}
 ): Promise<ResolvedAuth> {
-  if (options.apiKey?.trim() && options.token?.trim()) {
-    throw new CliUsageError(AMBIGUOUS_CREDENTIAL_MESSAGE);
-  }
-
-  const fromFlag = resolveFrom("flag", options.apiKey, options.token);
-
-  if (fromFlag) {
-    return fromFlag;
-  }
-
-  const fromEnv = resolveFrom(
-    "env",
-    process.env.DECODO_API_KEY,
-    process.env.DECODO_AUTH_TOKEN
+  return (
+    resolveFrom("flag", options.token) ??
+    resolveFrom("env", process.env.DECODO_AUTH_TOKEN) ??
+    (await fromConfig()) ?? { credential: undefined, source: "none" }
   );
-
-  if (fromEnv) {
-    return fromEnv;
-  }
-
-  const config = await readConfig();
-  const fromConfig = resolveFrom("config", config?.apiKey, config?.authToken);
-
-  if (fromConfig) {
-    return fromConfig;
-  }
-
-  return { credential: undefined, source: "none" };
 }

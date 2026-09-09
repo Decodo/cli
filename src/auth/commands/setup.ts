@@ -1,73 +1,80 @@
-import { Command, Option } from "commander";
+import { AuthenticationError } from "@decodo/sdk-ts";
+import { Command } from "commander";
 import { getRootOpts } from "../../cli/services/global-opts.js";
 import { CliUsageError } from "../../platform/errors/cli-usage-error.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import { promptHidden } from "../../platform/services/prompt-hidden.js";
 import { validateCredential } from "../../scrape/services/auth-validation.js";
-import { AMBIGUOUS_CREDENTIAL_MESSAGE, PLAYGROUND_URL } from "../constants.js";
+import { PLAYGROUND_URL } from "../constants.js";
 import { getConfigPath, writeConfig } from "../services/config.js";
+import { detectCredentialType } from "../services/detect-credential-type.js";
 import type { DecodoConfig } from "../types/config.js";
-import type { AuthCredential } from "../types/credential.js";
+import type { AuthCredential, AuthType } from "../types/credential.js";
 
-const TOKEN_PROMPT = `Paste your Web Scraping API basic auth token (${PLAYGROUND_URL}): `;
+const TOKEN_PROMPT = `Paste your Web Scraping API auth token (${PLAYGROUND_URL}): `;
 
 interface SetupOptions {
-  apiKey?: string;
   token?: string;
 }
 
-function credentialFrom(
-  apiKey: string | undefined,
-  token: string | undefined
-): AuthCredential | undefined {
-  if (token) {
-    return { kind: "token", value: token };
-  }
-
-  if (apiKey) {
-    return { kind: "apiKey", value: apiKey };
-  }
-
-  return;
+function oppositeAuthType(type: AuthType): AuthType {
+  return type === "token" ? "apiKey" : "token";
 }
 
 function toConfig(credential: AuthCredential): DecodoConfig {
-  if (credential.kind === "apiKey") {
+  if (credential.type === "apiKey") {
     return { apiKey: credential.value };
   }
 
   return { authToken: credential.value };
 }
 
-export const setupCommand = new Command("setup")
-  .description("Configure the Decodo CLI with your auth token")
-  .option(
-    "--token <value>",
-    "Web Scraping API basic auth token (non-interactive)"
-  )
-  .addOption(
-    new Option("--api-key <value>", "API key (non-interactive)").hideHelp()
-  )
-  .action(async (options: SetupOptions, command) => {
-    const rootOpts = getRootOpts(command);
-    const apiKey = (options.apiKey ?? rootOpts.apiKey)?.trim();
-    const token = (options.token ?? rootOpts.token)?.trim();
+async function verifyCredential(value: string): Promise<AuthCredential> {
+  const detected: AuthCredential = {
+    type: detectCredentialType(value),
+    value,
+  };
 
-    if (apiKey && token) {
-      handleCliError(new CliUsageError(AMBIGUOUS_CREDENTIAL_MESSAGE));
+  try {
+    await validateCredential(detected);
+    return detected;
+  } catch (err) {
+    if (!(err instanceof AuthenticationError)) {
+      throw err;
     }
 
-    const credential: AuthCredential = credentialFrom(apiKey, token) ?? {
-      kind: "token",
-      value: (await promptHidden(TOKEN_PROMPT)).trim(),
+    const fallback: AuthCredential = {
+      type: oppositeAuthType(detected.type),
+      value,
     };
 
-    if (!credential.value) {
+    try {
+      await validateCredential(fallback);
+    } catch {
+      throw err;
+    }
+
+    return fallback;
+  }
+}
+
+export const setupCommand = new Command("setup")
+  .description("Configure the Decodo CLI with your auth token")
+  .option("--token <value>", "Web Scraping API auth token (non-interactive)")
+  .action(async (options: SetupOptions, command) => {
+    const rootOpts = getRootOpts(command);
+    const value = (
+      options.token?.trim() ||
+      rootOpts.token?.trim() ||
+      (await promptHidden(TOKEN_PROMPT))
+    ).trim();
+
+    if (!value) {
       handleCliError(new CliUsageError("auth token is required."));
     }
 
     try {
-      await validateCredential(credential);
+      const credential = await verifyCredential(value);
       await writeConfig(toConfig(credential));
       console.log(`Setup complete. Configuration saved to ${getConfigPath()}`);
     } catch (err) {

@@ -12,8 +12,8 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
   createDecodoClient: vi.fn(),
 }));
 
-const TOKEN_CREDENTIAL = { kind: "token", value: "test-token" } as const;
-const API_KEY_CREDENTIAL = { kind: "apiKey", value: "test-api-key" } as const;
+const TOKEN_CREDENTIAL = { type: "token", value: "test-token" } as const;
+const API_KEY_CREDENTIAL = { type: "apiKey", value: "test-api-key" } as const;
 
 describe("validateCredential", () => {
   const scrape = vi.fn();
@@ -53,7 +53,7 @@ describe("validateCredential", () => {
     scrape.mockRejectedValue(new AuthenticationError("Username invalid."));
 
     await expect(
-      validateCredential({ kind: "token", value: "bad-token" })
+      validateCredential({ type: "token", value: "bad-token" })
     ).rejects.toThrow(AuthenticationError);
   });
 

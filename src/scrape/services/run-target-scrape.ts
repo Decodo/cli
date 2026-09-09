@@ -88,13 +88,10 @@ export function createTargetAction(
     const verbose = rootOpts.verbose === true;
 
     try {
-      const auth = await resolveAuthToken({
-        apiKey: rootOpts.apiKey,
-        token: rootOpts.token,
-      });
+      const auth = await resolveAuthToken({ token: rootOpts.token });
       verboseLog(
         verbose,
-        `auth source=${auth.source} kind=${auth.credential?.kind ?? "none"}`
+        `auth source=${auth.source} type=${auth.credential?.type ?? "none"}`
       );
       if (!auth.credential) {
         throw new AuthRequiredError();

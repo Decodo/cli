@@ -7,7 +7,7 @@ export function createDecodoClient(
   schema?: DecodoSchema
 ): DecodoClient {
   const credentials =
-    credential.kind === "apiKey"
+    credential.type === "apiKey"
       ? { apiKey: credential.value }
       : { token: credential.value };
 

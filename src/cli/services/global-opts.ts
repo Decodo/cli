@@ -1,7 +1,6 @@
 import type { Command } from "commander";
 
 export interface RootOptions {
-  apiKey?: string;
   token?: string;
   verbose?: boolean;
 }
