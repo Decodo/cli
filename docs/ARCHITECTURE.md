@@ -116,7 +116,7 @@ then add a branch in `resolveCliExitCode` (and a hint in `handleCliError` if use
 reports its `source` (`flag` | `env` | `config` | `none`). Persistent config lives in a
 JSON file resolved through `platform/services/paths.ts` (via `env-paths`) and managed by
 `auth/services/config.ts` (`readConfig`/`writeConfig`/`clearConfig`). The config file is
-written with `0o600` permissions and only persists a validated `authToken`. The `setup`,
+written with `0o600` permissions and only persists a validated credential. The `setup`,
 `reset`, and `whoami` commands are the user-facing surface over these helpers; `mask.ts`
 keeps tokens from being printed in full.
 

@@ -111,7 +111,7 @@ npx @decodo/cli scrape https://ip.decodo.com --token "$DECODO_AUTH_TOKEN"
 
 ## Authentication
 
-Get a basic auth token from the Decodo [Playground](https://dashboard.decodo.com/playground).
+Get an auth token from the Decodo [Playground](https://dashboard.decodo.com/playground).
 
 ```bash
 # Interactive — saves token to config
@@ -252,7 +252,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 
 | Variable | Description |
 | --- | --- |
-| `DECODO_AUTH_TOKEN` | Basic auth token (overrides saved config, below `--token`) |
+| `DECODO_AUTH_TOKEN` | Auth token (overrides saved config, below `--token`) |
 | `DECODO_CONFIG_HOME` | Override config directory (default: `$XDG_CONFIG_HOME/decodo`, else `~/.config/decodo`) |
 
 ## Exit codes

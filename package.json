@@ -1,6 +1,6 @@
 {
   "name": "@decodo/cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Official CLI for the Decodo APIs",
   "license": "MIT",
   "type": "module",
@@ -37,7 +37,7 @@
   },
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
-    "@decodo/sdk-ts": "^2.1.2",
+    "@decodo/sdk-ts": "^2.3.0",
     "commander": "^14.0.0"
   },
   "devDependencies": {

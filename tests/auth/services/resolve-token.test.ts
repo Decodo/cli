@@ -1,5 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { isolateConfigHome } from "../../platform/helpers/config-home.js";
+
+const BASIC_TOKEN = "VTAwMDAwMDAwMDA6UFdfZXhhbXBsZXNlY3JldA==";
+const API_KEY =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+async function resolve(options?: { token?: string }) {
+  const { resolveAuthToken } = await import(
+    "../../../src/auth/services/resolve-token.js"
+  );
+  return resolveAuthToken(options);
+}
 
 describe("resolveAuthToken", () => {
   let restoreConfigHome: () => void;
@@ -22,52 +34,90 @@ describe("resolveAuthToken", () => {
     vi.resetModules();
   });
 
-  it("prefers flag over env and config", async () => {
-    process.env.DECODO_AUTH_TOKEN = "env-token";
+  it("prefers the flag over env and config", async () => {
+    process.env.DECODO_AUTH_TOKEN = BASIC_TOKEN;
     const { writeConfig } = await import(
       "../../../src/auth/services/config.js"
     );
     await writeConfig({ authToken: "config-token" });
 
-    const { resolveAuthToken } = await import(
-      "../../../src/auth/services/resolve-token.js"
-    );
-    const result = await resolveAuthToken({ token: "flag-token" });
-    expect(result).toEqual({ token: "flag-token", source: "flag" });
+    expect(await resolve({ token: BASIC_TOKEN })).toEqual({
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
+      source: "flag",
+    });
+  });
+
+  it("infers an api key passed through --token", async () => {
+    expect(await resolve({ token: API_KEY })).toEqual({
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
+      source: "flag",
+    });
+  });
+
+  it("infers an api key from DECODO_AUTH_TOKEN", async () => {
+    process.env.DECODO_AUTH_TOKEN = API_KEY;
+
+    expect(await resolve()).toEqual({
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
+      source: "env",
+    });
   });
 
   it("prefers env over config", async () => {
-    process.env.DECODO_AUTH_TOKEN = "env-token";
+    process.env.DECODO_AUTH_TOKEN = BASIC_TOKEN;
     const { writeConfig } = await import(
       "../../../src/auth/services/config.js"
     );
     await writeConfig({ authToken: "config-token" });
 
-    const { resolveAuthToken } = await import(
-      "../../../src/auth/services/resolve-token.js"
-    );
-    const result = await resolveAuthToken();
-    expect(result).toEqual({ token: "env-token", source: "env" });
+    expect(await resolve()).toEqual({
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
+      source: "env",
+    });
   });
 
-  it("reads token from config file", async () => {
+  it("uses the persisted kind for a saved api key without re-detecting", async () => {
     const { writeConfig } = await import(
       "../../../src/auth/services/config.js"
     );
-    await writeConfig({ authToken: "config-token" });
+    await writeConfig({ apiKey: BASIC_TOKEN });
 
-    const { resolveAuthToken } = await import(
-      "../../../src/auth/services/resolve-token.js"
-    );
-    const result = await resolveAuthToken();
-    expect(result).toEqual({ token: "config-token", source: "config" });
+    expect(await resolve()).toEqual({
+      credential: { type: AUTH_TYPE.API_KEY, value: BASIC_TOKEN },
+      source: "config",
+    });
   });
 
-  it("returns none when no token is available", async () => {
-    const { resolveAuthToken } = await import(
-      "../../../src/auth/services/resolve-token.js"
+  it("reads a saved auth token from config", async () => {
+    const { writeConfig } = await import(
+      "../../../src/auth/services/config.js"
     );
-    const result = await resolveAuthToken();
-    expect(result).toEqual({ token: undefined, source: "none" });
+    await writeConfig({ authToken: BASIC_TOKEN });
+
+    expect(await resolve()).toEqual({
+      credential: { type: AUTH_TYPE.TOKEN, value: BASIC_TOKEN },
+      source: "config",
+    });
+  });
+
+  it("returns none when no credential is available", async () => {
+    expect(await resolve()).toEqual({
+      credential: undefined,
+      source: "none",
+    });
+  });
+
+  it("treats a whitespace-only flag as no credential", async () => {
+    expect(await resolve({ token: "   " })).toEqual({
+      credential: undefined,
+      source: "none",
+    });
+  });
+
+  it("trims surrounding whitespace before detecting", async () => {
+    expect(await resolve({ token: `  ${API_KEY}\n` })).toEqual({
+      credential: { type: AUTH_TYPE.API_KEY, value: API_KEY },
+      source: "flag",
+    });
   });
 });

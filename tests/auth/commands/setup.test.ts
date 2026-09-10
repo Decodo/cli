@@ -4,6 +4,9 @@ import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 const mockPromptHidden = vi.hoisted(() => vi.fn());
 
+const API_KEY_SHAPED =
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
 vi.mock("../../../src/platform/services/prompt-hidden.js", () => ({
   promptHidden: mockPromptHidden,
 }));
@@ -64,13 +67,61 @@ describe("setupCommand", () => {
   });
 
   it("saves config on successful validation", async () => {
-    await runSetup(["--token", "valid-token"]);
+    await runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="]);
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "valid-token",
+      authToken: "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ=",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
+  });
+
+  it("validates a token against the scraper api endpoint", async () => {
+    await runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="]);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://scraper-api.decodo.com/v2/scrape",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Basic VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ=",
+        }),
+      })
+    );
+  });
+
+  it("falls back to the opposite auth type when the detected one is rejected", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: "Invalid credentials", status: "failed" }),
+    } as Response);
+
+    await runSetup(["--token", API_KEY_SHAPED]);
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const { readConfig } = await import("../../../src/auth/services/config.js");
+    expect(await readConfig()).toEqual({ authToken: API_KEY_SHAPED });
+  });
+
+  it("reports the detected type's error when both auth types fail", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: "ORIGINAL-error", status: "failed" }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: "FALLBACK-error", status: "failed" }),
+      } as Response);
+
+    await expect(runSetup(["--token", API_KEY_SHAPED])).rejects.toThrow(
+      "process.exit:3"
+    );
+
+    expect(stderr.join("\n")).toContain("ORIGINAL-error");
+    expect(stderr.join("\n")).not.toContain("FALLBACK-error");
   });
 
   it("does not save config on 401", async () => {
@@ -90,21 +141,24 @@ describe("setupCommand", () => {
   });
 
   it("saves config when token comes from global --token", async () => {
-    await runSetup([], ["--token", "global-token"]);
+    await runSetup([], ["--token", "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0"]);
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "global-token",
+      authToken: "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
   });
 
   it("prefers setup --token over global --token", async () => {
-    await runSetup(["--token", "setup-token"], ["--token", "global-token"]);
+    await runSetup(
+      ["--token", "VTAwMDAwMDAwMDM6UFdfc2V0dXBzZWNyZXQ="],
+      ["--token", "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0"]
+    );
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "setup-token",
+      authToken: "VTAwMDAwMDAwMDM6UFdfc2V0dXBzZWNyZXQ=",
     });
   });
 
@@ -147,9 +201,9 @@ describe("setupCommand", () => {
       }),
     } as Response);
 
-    await expect(runSetup(["--token", "valid-token"])).rejects.toThrow(
-      "process.exit:5"
-    );
+    await expect(
+      runSetup(["--token", "VTAwMDAwMDAwMDE6UFdfdmFsaWRzZWNyZXQ="])
+    ).rejects.toThrow("process.exit:5");
 
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toBeUndefined();
@@ -158,14 +212,16 @@ describe("setupCommand", () => {
   });
 
   it("prompts for token interactively when no flags are provided", async () => {
-    mockPromptHidden.mockResolvedValue("prompted-token");
+    mockPromptHidden.mockResolvedValue(
+      "VTAwMDAwMDAwMDQ6UFdfcHJvbXB0ZWRzZWNyZXQ="
+    );
 
     await runSetup([]);
 
     expect(mockPromptHidden).toHaveBeenCalledOnce();
     const { readConfig } = await import("../../../src/auth/services/config.js");
     expect(await readConfig()).toEqual({
-      authToken: "prompted-token",
+      authToken: "VTAwMDAwMDAwMDQ6UFdfcHJvbXB0ZWRzZWNyZXQ=",
     });
     expect(stdout.join("\n")).toContain("Setup complete");
   });

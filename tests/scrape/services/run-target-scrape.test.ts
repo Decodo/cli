@@ -1,6 +1,7 @@
 import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { ConfigParseError } from "../../../src/auth/errors/config-parse-error.js";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { attachScrapeOutputOptions } from "../../../src/output/commands/attach-output-options.js";
@@ -42,7 +43,7 @@ describe("createTargetAction", () => {
     });
 
     vi.mocked(resolveAuthToken).mockResolvedValue({
-      token: "test-token",
+      credential: { type: AUTH_TYPE.TOKEN, value: "test-token" },
       source: "flag",
     });
     vi.spyOn(process, "exit").mockImplementation((code) => {
@@ -93,7 +94,7 @@ describe("createTargetAction", () => {
       markdown: false,
     });
     expect(createDecodoClient).toHaveBeenCalledWith(
-      "test-token",
+      { type: AUTH_TYPE.TOKEN, value: "test-token" },
       BundledSchema.shared
     );
     expect(stdout).toBe('{"ok":true}\n');
@@ -121,7 +122,7 @@ describe("createTargetAction", () => {
       { from: "user" }
     );
 
-    expect(stderr).toContain("[verbose] auth source=flag\n");
+    expect(stderr).toContain("[verbose] auth source=flag type=token\n");
     expect(stderr).toContain(
       "[verbose] request target=google_search query=coffee\n"
     );

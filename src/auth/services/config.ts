@@ -10,6 +10,19 @@ export function getConfigPath(): string {
   return join(getConfigDir(), CONFIG_FILE);
 }
 
+function readCredentialField(
+  parsed: Partial<DecodoConfig>,
+  key: keyof DecodoConfig
+): string | undefined {
+  const value = parsed[key];
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return;
+}
+
 function parseConfig(
   raw: string,
   configPath: string
@@ -22,13 +35,28 @@ function parseConfig(
     throw new ConfigParseError(configPath);
   }
 
-  if (typeof parsed.authToken === "string" && parsed.authToken.length > 0) {
-    return {
-      authToken: parsed.authToken,
-    };
+  if (!parsed || typeof parsed !== "object") {
+    return;
   }
 
-  return;
+  const apiKey = readCredentialField(parsed, "apiKey");
+  const authToken = readCredentialField(parsed, "authToken");
+
+  if (!(apiKey || authToken)) {
+    return;
+  }
+
+  const config: DecodoConfig = {};
+
+  if (apiKey) {
+    config.apiKey = apiKey;
+  }
+
+  if (authToken) {
+    config.authToken = authToken;
+  }
+
+  return config;
 }
 
 export async function readConfig(): Promise<DecodoConfig | undefined> {

@@ -26,7 +26,7 @@ const program = new Command()
   .option("-v, --verbose", "Print debug logs to stderr")
   .option(
     "--token <token>",
-    "Basic auth token (overrides DECODO_AUTH_TOKEN and saved config)"
+    "Auth token (overrides DECODO_AUTH_TOKEN and saved config)"
   );
 
 async function main(): Promise<void> {

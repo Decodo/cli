@@ -51,34 +51,57 @@ describe("whoamiCommand", () => {
     const { writeConfig } = await import(
       "../../../src/auth/services/config.js"
     );
-    await writeConfig({ authToken: "abcdefghijklmnop" });
+    await writeConfig({ authToken: "VTAwMDAwMDAwMDU6UFdfd2hvYW1pc2VjcmV0" });
 
     await runWhoami(["whoami"]);
 
     expect(stdout).toContain("source: config");
-    expect(stdout).toContain("token: abcd...mnop");
+    expect(stdout).toContain("token: VTAw...cmV0");
   });
 
   it("prints auth source and masked token from global --token", async () => {
-    await runWhoami(["--token", "abcdefghijklmnop", "whoami"]);
+    await runWhoami([
+      "--token",
+      "VTAwMDAwMDAwMDU6UFdfd2hvYW1pc2VjcmV0",
+      "whoami",
+    ]);
 
     expect(stdout).toContain("source: flag");
-    expect(stdout).toContain("token: abcd...mnop");
+    expect(stdout).toContain("token: VTAw...cmV0");
   });
 
   it("prefers global --token over saved config", async () => {
     const { writeConfig } = await import(
       "../../../src/auth/services/config.js"
     );
-    await writeConfig({ authToken: "config-token-value" });
+    await writeConfig({ authToken: "VTAwMDAwMDAwMDY6UFdfY29uZmlnc2VjcmV0" });
 
-    await runWhoami(["--token", "flag-token-value", "whoami"]);
+    await runWhoami([
+      "--token",
+      "VTAwMDAwMDAwMDI6UFdfZ2xvYmFsc2VjcmV0",
+      "whoami",
+    ]);
 
     expect(stdout).toContain("source: flag");
-    expect(stdout).toContain("token: flag...alue");
+    expect(stdout).toContain("token: VTAw...cmV0");
   });
 
-  it("exits with code 3 when no token is available", async () => {
+  it("prints the api key label for a saved api key", async () => {
+    const { writeConfig } = await import(
+      "../../../src/auth/services/config.js"
+    );
+    await writeConfig({
+      apiKey:
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    });
+
+    await runWhoami(["whoami"]);
+
+    expect(stdout).toContain("source: config");
+    expect(stdout).toContain("api key: 0123...cdef");
+  });
+
+  it("exits with code 3 when no credential is available", async () => {
     await expect(runWhoami(["whoami"])).rejects.toThrow("process.exit:3");
     expect(exitCode).toBe(3);
   });

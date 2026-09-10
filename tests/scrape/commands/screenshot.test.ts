@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { BundledSchema, ValidationError } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { BINARY_TTY_ERROR } from "../../../src/platform/services/write-binary.js";
 import { createScreenshotCommand } from "../../../src/scrape/commands/screenshot.js";
@@ -31,7 +32,7 @@ describe("createScreenshotCommand", () => {
     stdoutBytes = undefined;
 
     vi.mocked(resolveAuthToken).mockResolvedValue({
-      token: "test-token",
+      credential: { type: AUTH_TYPE.TOKEN, value: "test-token" },
       source: "flag",
     });
     vi.spyOn(process, "exit").mockImplementation((code) => {
