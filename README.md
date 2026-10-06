@@ -154,7 +154,7 @@ You should see Markdown or parsed JSON within seconds. If you see an auth error,
 | `decodo search <query>` | Web search (`--engine google\|bing`, `--geo`, `--limit`) |
 | `decodo screenshot <url>` | Capture a PNG screenshot (`-o` file or directory) |
 | `decodo targets` | List all scrape targets by group |
-| `decodo setup` | Save auth token interactively |
+| `decodo setup` | Save your API key or auth token interactively |
 | `decodo whoami` | Show configured auth source |
 | `decodo reset` | Remove saved auth config |
 
@@ -264,7 +264,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 | `0` | Success |
 | `1` | General error |
 | `2` | Usage error (invalid flags, missing args) |
-| `3` | Authentication error (missing or invalid token) |
+| `3` | Authentication error (missing or invalid credential) |
 | `4` | Validation error (invalid request parameters) |
 | `5` | Rate limit |
 | `6` | Timeout |
@@ -272,7 +272,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 
 ## Troubleshooting
 
-**`No auth token found`**
+**`No API key or auth token found`**
 
 Run `decodo setup` or export `DECODO_AUTH_TOKEN`.
 

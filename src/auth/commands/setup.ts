@@ -11,7 +11,7 @@ import { detectCredentialType } from "../services/detect-credential-type.js";
 import type { DecodoConfig } from "../types/config.js";
 import type { AuthCredential, AuthType } from "../types/credential.js";
 
-const TOKEN_PROMPT = `Paste your Web Scraping API auth token (${PLAYGROUND_URL}): `;
+const TOKEN_PROMPT = `Paste your Web Data API key or auth token (${PLAYGROUND_URL}): `;
 
 interface SetupOptions {
   token?: string;
@@ -59,8 +59,8 @@ async function verifyCredential(value: string): Promise<AuthCredential> {
 }
 
 export const setupCommand = new Command("setup")
-  .description("Configure the Decodo CLI with your auth token")
-  .option("--token <value>", "Web Scraping API auth token (non-interactive)")
+  .description("Configure the Decodo CLI with your API key or auth token")
+  .option("--token <value>", "Web Data API key or auth token (non-interactive)")
   .action(async (options: SetupOptions, command) => {
     const rootOpts = getRootOpts(command);
     const token = (
@@ -70,7 +70,7 @@ export const setupCommand = new Command("setup")
     ).trim();
 
     if (!token) {
-      handleCliError(new CliUsageError("auth token is required."));
+      handleCliError(new CliUsageError("API key or auth token is required."));
     }
 
     try {
