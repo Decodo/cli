@@ -136,7 +136,7 @@ function Offer-Setup([string]$BinDir) {
 
   if (-not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected) {
     Write-Host ''
-    Write-Host 'Next: configure your auth token.'
+    Write-Host 'Next: configure your API key or auth token.'
     Write-Host ''
     $answer = Read-Host 'Continue with setup? [Y/n]'
     if ($answer -match '^[nN]') {
@@ -153,7 +153,7 @@ function Offer-Setup([string]$BinDir) {
 
   $cmd = Get-CommandPrefix $BinDir
   Write-Host ''
-  Write-Host "Next step: configure your auth token with $cmd setup"
+  Write-Host "Next step: configure your API key or auth token with $cmd setup"
   Write-Host ''
 }
 

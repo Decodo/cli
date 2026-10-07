@@ -1,4 +1,5 @@
-export const PLAYGROUND_URL = "https://dashboard.decodo.com/playground";
+export const PLAYGROUND_URL =
+  "https://dashboard.decodo.com/web-data/playground";
 
 export const AUTH_MISSING_MESSAGE = "No API key or auth token found.";
 
