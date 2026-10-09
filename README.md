@@ -51,7 +51,7 @@ The CLI is the right tool when you need direct shell access, scripting, or autom
 
 - **Pipe-friendly by design**. Compact JSON when piped, human-readable output in a TTY, and explicit exit codes for authentication, validation, rate limits, and API errors.
 
-- **Fast time to value**. From API token to your first scrape in minutes. Install with one command or use `npx` with zero setup.
+- **Fast time to value**. From API key to your first scrape in minutes. Install with one command or use `npx` with zero setup.
 
 ## Use cases
 
@@ -69,7 +69,7 @@ Common scenarios:
 ## Quick start
 
 1. **Create a free account** at [dashboard.decodo.com](https://dashboard.decodo.com/) — get up to 2K free requests with no credit card required.
-2. **Get your Web Scraping API token** from the Decodo [Playground](https://dashboard.decodo.com/playground).
+2. **Get your Web Data API key** from your Web Data API subscription on the Decodo [dashboard](https://dashboard.decodo.com/web-data/playground). Older plans only have a basic authentication token, which also works.
 3. **Install Node.js 18+** from [nodejs.org](https://nodejs.org/) (required for npm or `npx`).
 4. **Install the CLI** using one of the methods below.
 5. **Authenticate and run** your first scrape:
@@ -111,23 +111,25 @@ npx @decodo/cli scrape https://ip.decodo.com --token "$DECODO_AUTH_TOKEN"
 
 ## Authentication
 
-Get an auth token from the Decodo [Playground](https://dashboard.decodo.com/playground).
+Use the Web Data API key from your subscription on the Decodo [dashboard](https://dashboard.decodo.com/web-data/playground).
+Older plans only have a basic authentication token, which works the same way. The CLI detects which
+one you provide, so the commands below take either.
 
 ```bash
-# Interactive — saves token to config
+# Interactive — saves the credential to config
 decodo setup
 
 # Environment variable — no saved config required
-export DECODO_AUTH_TOKEN='your-token'
+export DECODO_AUTH_TOKEN='your-api-key'
 
 # Per-command override
-decodo whoami --token 'your-token'
+decodo whoami --token 'your-api-key'
 ```
 
 **Precedence:** `--token` flag → `DECODO_AUTH_TOKEN` env var → saved config (`decodo setup`).
 
 ```bash
-decodo whoami   # shows token source (flag / env / config)
+decodo whoami   # shows credential source (flag / env / config)
 decodo reset    # clear saved config
 ```
 
@@ -140,7 +142,7 @@ decodo scrape https://ip.decodo.com
 decodo google-search "top articles hacker news" --page-count 5 --parse
 ```
 
-You should see Markdown or parsed JSON within seconds. If you see an auth error, double-check your token from the dashboard.
+You should see Markdown or parsed JSON within seconds. If you see an auth error, double-check your API key on the dashboard.
 
 ## Commands
 
@@ -152,7 +154,7 @@ You should see Markdown or parsed JSON within seconds. If you see an auth error,
 | `decodo search <query>` | Web search (`--engine google\|bing`, `--geo`, `--limit`) |
 | `decodo screenshot <url>` | Capture a PNG screenshot (`-o` file or directory) |
 | `decodo targets` | List all scrape targets by group |
-| `decodo setup` | Save auth token interactively |
+| `decodo setup` | Save your API key or auth token interactively |
 | `decodo whoami` | Show configured auth source |
 | `decodo reset` | Remove saved auth config |
 
@@ -252,7 +254,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 
 | Variable | Description |
 | --- | --- |
-| `DECODO_AUTH_TOKEN` | Auth token (overrides saved config, below `--token`) |
+| `DECODO_AUTH_TOKEN` | API key or basic auth token (overrides saved config, below `--token`) |
 | `DECODO_CONFIG_HOME` | Override config directory (default: `$XDG_CONFIG_HOME/decodo`, else `~/.config/decodo`) |
 
 ## Exit codes
@@ -262,7 +264,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 | `0` | Success |
 | `1` | General error |
 | `2` | Usage error (invalid flags, missing args) |
-| `3` | Authentication error (missing or invalid token) |
+| `3` | Authentication error (missing or invalid credential) |
 | `4` | Validation error (invalid request parameters) |
 | `5` | Rate limit |
 | `6` | Timeout |
@@ -270,7 +272,7 @@ Use the CLI when your agent needs to scrape from a shell, terminal, CI/CD pipeli
 
 ## Troubleshooting
 
-**`No auth token found`**
+**`No API key or auth token found`**
 
 Run `decodo setup` or export `DECODO_AUTH_TOKEN`.
 

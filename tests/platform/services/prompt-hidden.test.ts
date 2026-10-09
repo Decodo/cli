@@ -44,6 +44,8 @@ describe("promptHidden", () => {
       listener();
     }
 
-    await expect(pending).rejects.toThrow("No auth token provided on stdin.");
+    await expect(pending).rejects.toThrow(
+      "No API key or auth token provided on stdin."
+    );
   });
 });

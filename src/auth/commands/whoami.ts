@@ -13,7 +13,7 @@ const CREDENTIAL_LABEL: Record<AuthType, string> = {
 };
 
 export const whoamiCommand = new Command("whoami")
-  .description("Show the active auth source and masked token")
+  .description("Show the active auth source and masked credential")
   .action(async (_options, command) => {
     const rootOpts = getRootOpts(command);
     const { credential, source } = await resolveAuthToken({

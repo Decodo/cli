@@ -168,7 +168,7 @@ describe("setupCommand", () => {
     await expect(runSetup([])).rejects.toThrow("process.exit:2");
 
     expect(exitCode).toBe(2);
-    expect(stderr.join("\n")).toContain("auth token is required");
+    expect(stderr.join("\n")).toContain("API key or auth token is required");
   });
 
   it("exits with usage when interactive prompt returns whitespace", async () => {
@@ -177,7 +177,7 @@ describe("setupCommand", () => {
     await expect(runSetup([])).rejects.toThrow("process.exit:2");
 
     expect(exitCode).toBe(2);
-    expect(stderr.join("\n")).toContain("auth token is required");
+    expect(stderr.join("\n")).toContain("API key or auth token is required");
   });
 
   it("falls back to prompt when global --token is whitespace-only", async () => {

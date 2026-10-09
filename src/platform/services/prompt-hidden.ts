@@ -27,7 +27,9 @@ function handleHiddenPromptChar(char: string, state: HiddenPromptState): void {
   if (code === CHAR_EOT) {
     state.cleanup();
     stdout.write("\n");
-    state.reject(new CliUsageError("No auth token provided on stdin."));
+    state.reject(
+      new CliUsageError("No API key or auth token provided on stdin.")
+    );
     return;
   }
 
@@ -55,7 +57,9 @@ async function promptViaReadline(message: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       rl.question(message).then((answer) => resolve(answer.trim()), reject);
       rl.once("close", () => {
-        reject(new CliUsageError("No auth token provided on stdin."));
+        reject(
+          new CliUsageError("No API key or auth token provided on stdin.")
+        );
       });
     });
   } finally {
@@ -91,7 +95,7 @@ export async function promptHidden(message: string): Promise<string> {
     const onEnd = (): void => {
       state.cleanup();
       stdout.write("\n");
-      reject(new CliUsageError("No auth token provided on stdin."));
+      reject(new CliUsageError("No API key or auth token provided on stdin."));
     };
 
     state.cleanup = (): void => {

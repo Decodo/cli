@@ -173,11 +173,11 @@ offer_setup() {
 
   if ! [ -t 0 ] || ! [ -t 1 ]; then
     cmd=$(command_prefix "$bin_dir")
-    printf "\nNext step: configure your auth token with ${BOLD}%s setup${RESET}\n\n" "$cmd"
+    printf "\nNext step: configure your API key or auth token with ${BOLD}%s setup${RESET}\n\n" "$cmd"
     return 0
   fi
 
-  printf '\nNext: configure your auth token.\n\n'
+  printf '\nNext: configure your API key or auth token.\n\n'
   printf 'Continue with setup? [Y/n] '
   if ! read -r answer </dev/tty 2>/dev/null; then
     cmd=$(command_prefix "$bin_dir")
