@@ -45,7 +45,7 @@ The CLI is the right tool when you need direct shell access, scripting, or autom
 
 - **Structured output for automation**. Markdown (human-readable), JSON and NDJSON (pipe-friendly), and PNG screenshots built for scripts, data pipelines, and AI agent subprocesses.
 
-- **Built-in support for popular targets**. Tier-1 commands for scrape, search, and screenshot, plus schema-driven subcommands for Google Search and Bing, Amazon, Walmart, and Target, Reddit, TikTok, YouTube, and more. Run `decodo targets` to list everything available.
+- **Built-in support for popular targets**. Tier-1 commands for scrape, search, map, crawl, and screenshot, plus schema-driven subcommands for Google Search and Bing, Amazon, Walmart, and Target, Reddit, TikTok, YouTube, and more. Run `decodo targets` to list everything available.
 
 - **Global proxy infrastructure**. Access 115M+ residential IPs across 195+ locations with IP rotation and geo-targeting. All requests are powered by the Decodo Web Scraping API with a 99.99% success rate.
 
@@ -113,7 +113,7 @@ npx @decodo/cli scrape https://ip.decodo.com --token "$DECODO_AUTH_TOKEN"
 
 Use the Web Data API key from your subscription on the Decodo [dashboard](https://dashboard.decodo.com/web-data/playground).
 Older plans only have a basic authentication token, which works the same way. The CLI detects which
-one you provide, so the commands below take either.
+one you provide, so the commands below take either. `search`, `map`, and `crawl` need an API key.
 
 ```bash
 # Interactive — saves the credential to config
@@ -151,12 +151,37 @@ You should see Markdown or parsed JSON within seconds. If you see an auth error,
 | Command | Description |
 | --- | --- |
 | `decodo scrape <url>` | Scrape a URL (Markdown by default) |
-| `decodo search <query>` | Web search (`--engine google\|bing`, `--geo`, `--limit`) |
+| `decodo search <query>` | Web search, parsed JSON results (`--geo`, `--locale`, `--page`) |
+| `decodo map <url>` | List a site's URLs, one per line (`--limit`, `--sitemap`, `--full`) |
+| `decodo crawl <url>` | Start a crawl and print its id; `--wait` prints pages as NDJSON |
 | `decodo screenshot <url>` | Capture a PNG screenshot (`-o` file or directory) |
 | `decodo targets` | List all scrape targets by group |
 | `decodo setup` | Save your API key or auth token interactively |
 | `decodo whoami` | Show configured auth source |
 | `decodo reset` | Remove saved auth config |
+
+### Search, map, and crawl
+
+These commands call the Decodo Web Data API and need an API key; a basic auth token is rejected with exit code `3`.
+
+```bash
+decodo search "rust web scraping" --geo de | jq '.organic[].title'
+decodo map https://example.com --limit 100 --select-paths "/blog/*"
+decodo crawl https://example.com --limit 50 --wait --progress -o pages.ndjson
+```
+
+`decodo crawl <url>` returns right away with the crawl id. Manage a running crawl with:
+
+```bash
+decodo crawl status <id>
+decodo crawl results <id> -o pages.ndjson
+decodo crawl results <id> --wait -o pages.ndjson
+decodo crawl cancel <id>
+```
+
+`crawl results --wait` lets an agent start a crawl, keep working, and collect the pages later. With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `3600`, exit code `6`); the crawl keeps running until you cancel it.
+
+> **Upgrading from 1.x:** `decodo search` used the `google_search` scrape target. Use `decodo google-search` or `decodo bing-search` for the previous behaviour.
 
 ### Schema-driven target commands
 

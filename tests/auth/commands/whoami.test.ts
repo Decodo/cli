@@ -3,16 +3,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
 async function runWhoami(args: string[]): Promise<void> {
-  const { whoamiCommand } = await import(
+  const { createWhoamiCommand } = await import(
     "../../../src/auth/commands/whoami.js"
   );
   const program = new Command()
     .option("--token <token>", "global token")
-    .addCommand(whoamiCommand);
+    .addCommand(createWhoamiCommand());
   await program.parseAsync(args, { from: "user" });
 }
 
-describe("whoamiCommand", () => {
+describe("createWhoamiCommand", () => {
   let restoreConfigHome: () => void;
   let previousEnvToken: string | undefined;
   let exitCode: number | undefined;

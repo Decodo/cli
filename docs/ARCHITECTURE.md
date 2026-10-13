@@ -28,12 +28,16 @@ HTTP client, and typed errors. Node >= 18 (CI on Node 24), pnpm, Biome via `ultr
 
 Command assembly is two-layered:
 
-- `cli/register.ts` composes the static commands (`setup`, `reset`, `whoami`) with the
+- `cli/register.ts` composes the static commands (`setup`, `reset`, `whoami`, `search`, `map`, `crawl`) with the
   dynamically generated scrape commands, then sorts them with `sortCommandsByOrder` so
   help output has a stable, curated order (`ROOT_COMMAND_ORDER`).
 - `scrape/register.ts` loads the schema once and builds the scrape-family commands:
-  `scrape`, `search`, `screenshot`, `targets` (list), plus one generated command per API
+  `scrape`, `screenshot`, `targets` (list), plus one generated command per API
   target from `codegen-target-commands.ts`.
+- The Data API commands `search`, `map`, and `crawl` (with `crawl status|results|cancel`)
+  live in their own modules and are registered directly in `cli/register.ts`. They don't
+  use the schema; each runs through `cli/services/run-data-action.ts`, which requires an
+  API key and hands the handler the SDK client.
 
 ## Schema loading
 
@@ -48,7 +52,7 @@ types, enums, and which field is the "primary" input (URL/query/etc.).
 Every command is produced by a `createXCommand(schema)` factory that returns a Commander
 `Command`. There are two flavors:
 
-- **Hand-written commands** (`scrape`, `search`, `screenshot`) define their own arguments,
+- **Hand-written commands** (`scrape`, `screenshot`) define their own arguments,
   options, and a custom request-body builder. Example: `scrape.ts` adds `--country`,
   `--headers`, `--target`, then passes a `buildBody` closure to `createTargetAction`.
 - **Generated commands** (`codegen-target-commands.ts`) iterate `schema.listTargets()`,

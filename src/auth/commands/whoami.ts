@@ -12,20 +12,22 @@ const CREDENTIAL_LABEL: Record<AuthType, string> = {
   [AUTH_TYPE.TOKEN]: "token",
 };
 
-export const whoamiCommand = new Command("whoami")
-  .description("Show the active auth source and masked credential")
-  .action(async (_options, command) => {
-    const rootOpts = getRootOpts(command);
-    const { credential, source } = await resolveAuthToken({
-      token: rootOpts.token,
+export function createWhoamiCommand(): Command {
+  return new Command("whoami")
+    .description("Show the active auth source and masked credential")
+    .action(async (_options, command) => {
+      const rootOpts = getRootOpts(command);
+      const { credential, source } = await resolveAuthToken({
+        token: rootOpts.token,
+      });
+
+      if (!credential) {
+        handleCliError(new AuthRequiredError());
+      }
+
+      console.log(`source: ${source}`);
+      console.log(
+        `${CREDENTIAL_LABEL[credential.type]}: ${mask(credential.value, 4, -4)}`
+      );
     });
-
-    if (!credential) {
-      handleCliError(new AuthRequiredError());
-    }
-
-    console.log(`source: ${source}`);
-    console.log(
-      `${CREDENTIAL_LABEL[credential.type]}: ${mask(credential.value, 4, -4)}`
-    );
-  });
+}

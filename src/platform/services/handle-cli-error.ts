@@ -6,6 +6,7 @@ import {
   ValidationError,
 } from "@decodo/sdk-ts";
 import { PLAYGROUND_URL } from "../../auth/constants.js";
+import { ApiKeyRequiredError } from "../../auth/errors/api-key-required-error.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { ScrapeFailedError } from "../../output/errors/scrape-failed-error.js";
 import { EXIT } from "../constants.js";
@@ -48,7 +49,11 @@ export function resolveCliExitCode(err: unknown): number {
     return EXIT.USAGE;
   }
 
-  if (err instanceof AuthRequiredError || err instanceof AuthenticationError) {
+  if (
+    err instanceof AuthRequiredError ||
+    err instanceof ApiKeyRequiredError ||
+    err instanceof AuthenticationError
+  ) {
     return EXIT.AUTH;
   }
 
@@ -161,6 +166,10 @@ export function handleCliError(
         `  1. Get your Web Data API key at ${PLAYGROUND_URL}\n` +
         "  2. Run `decodo setup` to save it (or set DECODO_AUTH_TOKEN)\n" +
         "  3. Re-run your command"
+    );
+  } else if (err instanceof ApiKeyRequiredError) {
+    console.error(
+      `Hint: Get your Web Data API key at ${PLAYGROUND_URL}, then run \`decodo setup\` or pass --token.`
     );
   } else if (err instanceof AuthenticationError) {
     console.error(

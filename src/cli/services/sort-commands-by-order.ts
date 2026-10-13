@@ -3,6 +3,8 @@ import type { Command } from "commander";
 export const ROOT_COMMAND_ORDER = [
   "scrape",
   "search",
+  "map",
+  "crawl",
   "screenshot",
   "setup",
   "reset",

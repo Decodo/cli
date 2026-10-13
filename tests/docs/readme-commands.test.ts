@@ -3,14 +3,16 @@ import { fileURLToPath } from "node:url";
 import { BundledSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
-import { resetCommand } from "../../src/auth/commands/reset.js";
-import { setupCommand } from "../../src/auth/commands/setup.js";
-import { whoamiCommand } from "../../src/auth/commands/whoami.js";
+import { createResetCommand } from "../../src/auth/commands/reset.js";
+import { createSetupCommand } from "../../src/auth/commands/setup.js";
+import { createWhoamiCommand } from "../../src/auth/commands/whoami.js";
+import { createCrawlCommand } from "../../src/crawl/commands/crawl.js";
+import { createMapCommand } from "../../src/map/commands/map.js";
 import { createCodegenTargetCommands } from "../../src/scrape/commands/codegen-target-commands.js";
 import { createListTargetsCommand } from "../../src/scrape/commands/list-targets.js";
 import { createScrapeCommand } from "../../src/scrape/commands/scrape.js";
 import { createScreenshotCommand } from "../../src/scrape/commands/screenshot.js";
-import { createSearchCommand } from "../../src/scrape/commands/search.js";
+import { createSearchCommand } from "../../src/search/commands/search.js";
 
 const README_PATH = fileURLToPath(new URL("../../README.md", import.meta.url));
 
@@ -34,11 +36,13 @@ function buildProgram(): Command {
     .option("--token <token>");
 
   for (const command of [
-    setupCommand,
-    resetCommand,
-    whoamiCommand,
+    createSetupCommand(),
+    createResetCommand(),
+    createWhoamiCommand(),
     createScrapeCommand(schema),
-    createSearchCommand(schema),
+    createSearchCommand(),
+    createMapCommand(),
+    createCrawlCommand(),
     createScreenshotCommand(schema),
     createListTargetsCommand(schema),
     ...createCodegenTargetCommands(schema),
@@ -127,6 +131,12 @@ function knownFlags(command: Command, program: Command): Set<string> {
   return flags;
 }
 
+function findCommand(parent: Command, name: string): Command | undefined {
+  return parent.commands.find(
+    (cmd) => cmd.name() === name || cmd.aliases().includes(name)
+  );
+}
+
 function resolveSubcommand(
   args: string[],
   program: Command
@@ -136,10 +146,18 @@ function resolveSubcommand(
     return { command: program, name: "decodo" };
   }
 
-  const command = program.commands.find(
-    (cmd) => cmd.name() === name || cmd.aliases().includes(name)
-  );
-  return command ? { command, name } : undefined;
+  const command = findCommand(program, name);
+  if (!command) {
+    return;
+  }
+
+  const subName = args
+    .slice(args.indexOf(name) + 1)
+    .find((arg) => !arg.startsWith("-"));
+  const subcommand = subName ? findCommand(command, subName) : undefined;
+  return subcommand
+    ? { command: subcommand, name: `${name} ${subName}` }
+    : { command, name };
 }
 
 describe("README command examples", () => {

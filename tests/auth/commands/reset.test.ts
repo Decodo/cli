@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isolateConfigHome } from "../../platform/helpers/config-home.js";
 
-describe("resetCommand", () => {
+describe("createResetCommand", () => {
   let restoreConfigHome: () => void;
   let stdout: string[];
 
@@ -27,10 +27,10 @@ describe("resetCommand", () => {
     );
     await writeConfig({ authToken: "saved-token" });
 
-    const { resetCommand } = await import(
+    const { createResetCommand } = await import(
       "../../../src/auth/commands/reset.js"
     );
-    const program = new Command().addCommand(resetCommand);
+    const program = new Command().addCommand(createResetCommand());
     await program.parseAsync(["reset"], { from: "user" });
 
     expect(await readConfig()).toBeUndefined();

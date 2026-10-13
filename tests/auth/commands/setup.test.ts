@@ -15,16 +15,18 @@ async function runSetup(
   setupArgs: string[] = [],
   globalArgs: string[] = []
 ): Promise<void> {
-  const { setupCommand } = await import("../../../src/auth/commands/setup.js");
+  const { createSetupCommand } = await import(
+    "../../../src/auth/commands/setup.js"
+  );
   const program = new Command()
     .option("--token <token>", "global token")
-    .addCommand(setupCommand);
+    .addCommand(createSetupCommand());
   await program.parseAsync([...globalArgs, "setup", ...setupArgs], {
     from: "user",
   });
 }
 
-describe("setupCommand", () => {
+describe("createSetupCommand", () => {
   let restoreConfigHome: () => void;
   let exitCode: number | undefined;
   let stdout: string[];
