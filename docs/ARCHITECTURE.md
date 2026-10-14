@@ -14,7 +14,7 @@ the response), so most command files only differ in how they assemble the reques
 
 Stack: TypeScript (ESM), [Commander](https://github.com/tj/commander.js) for the command
 tree, [`@decodo/sdk-ts`](https://www.npmjs.com/package/@decodo/sdk-ts) for the schema, the
-HTTP client, and typed errors. Node >= 18 (CI on Node 24), pnpm, Biome via `ultracite`.
+HTTP client, and typed errors. Node >= 22 (CI on Node 24), pnpm, Biome via `ultracite`.
 
 ## Startup and command registration
 

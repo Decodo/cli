@@ -3,7 +3,7 @@ set -e
 
 PACKAGE_NAME="@decodo/cli"
 COMMAND_NAME="decodo"
-MIN_NODE_MAJOR=18
+MIN_NODE_MAJOR=22
 
 ORIG_PATH=""
 USER_PREFIX_BIN=""

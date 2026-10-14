@@ -8,7 +8,7 @@ file short; the full design narrative lives in [`docs/ARCHITECTURE.md`](docs/ARC
 An ESM TypeScript CLI (`decodo`) that wraps the Decodo Web Scraping API via
 [`@decodo/sdk-ts`](https://www.npmjs.com/package/@decodo/sdk-ts). It turns each API
 scrape target into a subcommand and adds shell-native output modes. Built with
-[Commander](https://github.com/tj/commander.js), bundled as ESM, run on Node >= 18
+[Commander](https://github.com/tj/commander.js), bundled as ESM, run on Node >= 22
 (developed and CI-tested on Node 24).
 
 ## Project layout
@@ -85,3 +85,12 @@ pnpm test       # vitest run (runs pnpm build first)
 ```
 
 CI runs lint, typecheck, build, and test on every PR — all four must pass.
+
+## Releases
+
+Releases are automated with semantic-release. Merging to `main` publishes a new npm
+version based on the PR title, which must follow
+[Conventional Commits](https://www.conventionalcommits.org) (a CI check enforces it):
+`fix:` → patch, `feat:` → minor, `feat!:` or a `BREAKING CHANGE:` footer → major.
+`chore:`, `docs:`, `ci:`, `refactor:`, `test:` don't release. Don't edit `version` in
+`package.json`; the release job sets it at publish time.
