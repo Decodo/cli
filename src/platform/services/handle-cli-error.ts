@@ -8,6 +8,7 @@ import {
 import { PLAYGROUND_URL } from "../../auth/constants.js";
 import { ApiKeyRequiredError } from "../../auth/errors/api-key-required-error.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
+import { CrawlFailedError } from "../../crawl/errors/crawl-failed-error.js";
 import { ScrapeFailedError } from "../../output/errors/scrape-failed-error.js";
 import { EXIT } from "../constants.js";
 import { CliUsageError } from "../errors/cli-usage-error.js";
@@ -69,7 +70,7 @@ export function resolveCliExitCode(err: unknown): number {
     return EXIT.TIMEOUT;
   }
 
-  if (err instanceof ScrapeFailedError) {
+  if (err instanceof ScrapeFailedError || err instanceof CrawlFailedError) {
     return EXIT.NETWORK;
   }
 

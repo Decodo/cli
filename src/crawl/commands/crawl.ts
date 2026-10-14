@@ -1,13 +1,13 @@
 import { Command, Option } from "commander";
 import { parsePositiveInt } from "../../cli/services/parse-positive-int.js";
 import { createDataAction } from "../../cli/services/run-data-action.js";
-import { verboseLog } from "../../cli/services/verbose-log.js";
 import { attachSiteOptions } from "../../map/commands/attach-site-options.js";
 import { writeJsonOutput } from "../../output/services/write-json-output.js";
 import {
   CRAWL_CONTENT_FORMATS,
   CRAWL_START_WAIT_ONLY_FLAGS,
 } from "../constants.js";
+import { assertCrawlSucceeded } from "../services/assert-crawl-succeeded.js";
 import { assertWaitFlags } from "../services/assert-wait-flags.js";
 import { buildCrawlRequest } from "../services/build-crawl-request.js";
 import { settleCrawl } from "../services/settle-crawl.js";
@@ -44,14 +44,17 @@ function createCrawlResultsCommand(): Command {
   ).action(
     createDataAction<CrawlResultsOptions>(async ({ api, input, options }) => {
       assertWaitFlags(options);
-      if (options.wait) {
-        await settleCrawl(api, input, options);
-      }
+      const status = options.wait
+        ? await settleCrawl(api, input, options)
+        : undefined;
 
       const pages = await api.getCrawlResults(input, {
         content: options.content,
       });
       writeCrawlPages(pages, options.output);
+      if (status) {
+        assertCrawlSucceeded(status);
+      }
     })
   );
 }
@@ -98,23 +101,22 @@ export function createCrawlCommand(): Command {
       "Write NDJSON to file instead of stdout (with --wait)"
     )
     .action(
-      createDataAction<CrawlOptions>(
-        async ({ api, input, options, verbose }) => {
-          assertWaitFlags(options, CRAWL_START_WAIT_ONLY_FLAGS);
+      createDataAction<CrawlOptions>(async ({ api, input, options }) => {
+        assertWaitFlags(options, CRAWL_START_WAIT_ONLY_FLAGS);
 
-          const { crawl_id: crawlId } = await api.startCrawl(
-            buildCrawlRequest(input, options)
-          );
-          if (!options.wait) {
-            process.stdout.write(`${crawlId}\n`);
-            return;
-          }
-
-          verboseLog(verbose, `crawl started id=${crawlId}`);
-          await settleCrawl(api, crawlId, options);
-          writeCrawlPages(await api.getCrawlResults(crawlId), options.output);
+        const { crawl_id: crawlId } = await api.startCrawl(
+          buildCrawlRequest(input, options)
+        );
+        if (!options.wait) {
+          process.stdout.write(`${crawlId}\n`);
+          return;
         }
-      )
+
+        process.stderr.write(`crawl ${crawlId} started\n`);
+        const status = await settleCrawl(api, crawlId, options);
+        writeCrawlPages(await api.getCrawlResults(crawlId), options.output);
+        assertCrawlSucceeded(status);
+      })
     )
     .addCommand(createCrawlStatusCommand())
     .addCommand(createCrawlResultsCommand())

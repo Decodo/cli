@@ -118,6 +118,7 @@ describe("createCrawlCommand", () => {
     ]);
 
     expect(stderr).toEqual([
+      "crawl abc started\n",
       "crawl abc pending: 0/1 pages, 0 failed, 1 in flight\n",
       "crawl abc done: 1/1 pages, 0 failed, 0 in flight\n",
     ]);
@@ -139,9 +140,46 @@ describe("createCrawlCommand", () => {
     ]);
 
     expect(stderr).toEqual([
+      "crawl abc started\n",
       "Warning: crawl abc ended with status truncated (max_duration)",
     ]);
     expect(stdout).toHaveLength(1);
+  });
+
+  it("prints the pages, then exits non-zero when the crawl faults", async () => {
+    api.getCrawlStatus.mockResolvedValue({
+      crawl_id: "abc",
+      status: "faulted",
+    });
+
+    await expect(
+      runDataCommand(createCrawlCommand(), [
+        "crawl",
+        "https://example.com",
+        "--wait",
+      ])
+    ).rejects.toThrow("process.exit:7");
+    expect(stdout).toEqual([`${JSON.stringify(PAGES[0])}\n`]);
+    expect(stderr).toEqual([
+      "crawl abc started\n",
+      "Error: Crawl abc ended with status faulted.",
+    ]);
+  });
+
+  it("names the crawl id before a failure while waiting", async () => {
+    api.getCrawlStatus.mockRejectedValue(new Error("Service unavailable"));
+
+    await expect(
+      runDataCommand(createCrawlCommand(), [
+        "crawl",
+        "https://example.com",
+        "--wait",
+      ])
+    ).rejects.toThrow("process.exit:1");
+    expect(stderr).toEqual([
+      "crawl abc started\n",
+      "Error: Service unavailable",
+    ]);
   });
 
   it("exits 2 when a wait-only flag is used without --wait", async () => {
@@ -195,6 +233,40 @@ describe("createCrawlCommand", () => {
 
     expect(api.getCrawlStatus).toHaveBeenCalledTimes(2);
     expect(api.getCrawlResults).toHaveBeenCalledWith("abc", { content: true });
+    expect(stdout).toEqual([`${JSON.stringify(PAGES[0])}\n`]);
+  });
+
+  it("prints results, then exits non-zero when the awaited crawl faulted", async () => {
+    api.getCrawlStatus.mockResolvedValue({
+      crawl_id: "abc",
+      status: "faulted",
+    });
+
+    await expect(
+      runDataCommand(createCrawlCommand(), [
+        "crawl",
+        "results",
+        "abc",
+        "--wait",
+      ])
+    ).rejects.toThrow("process.exit:7");
+    expect(stdout).toEqual([`${JSON.stringify(PAGES[0])}\n`]);
+  });
+
+  it("warns but succeeds when the awaited crawl was cancelled", async () => {
+    api.getCrawlStatus.mockResolvedValue({
+      crawl_id: "abc",
+      status: "cancelled",
+    });
+
+    await runDataCommand(createCrawlCommand(), [
+      "crawl",
+      "results",
+      "abc",
+      "--wait",
+    ]);
+    expect(exitCode).toBeUndefined();
+    expect(stderr).toEqual(["Warning: crawl abc ended with status cancelled"]);
     expect(stdout).toEqual([`${JSON.stringify(PAGES[0])}\n`]);
   });
 

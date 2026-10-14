@@ -1,7 +1,8 @@
-import type { WebScrapingApi } from "@decodo/sdk-ts";
+import type { GetCrawlStatusResponse, WebScrapingApi } from "@decodo/sdk-ts";
 import {
   DEFAULT_CRAWL_TIMEOUT_SECONDS,
   DEFAULT_POLL_INTERVAL_SECONDS,
+  PARTIAL_CRAWL_STATUSES,
 } from "../constants.js";
 import type { CrawlWaitOptions } from "../types/crawl-command.js";
 import { formatCrawlProgress } from "./format-crawl-progress.js";
@@ -11,7 +12,7 @@ export async function settleCrawl(
   api: WebScrapingApi,
   crawlId: string,
   options: CrawlWaitOptions
-): Promise<void> {
+): Promise<GetCrawlStatusResponse> {
   const status = await waitForCrawl(api, crawlId, {
     pollIntervalMs:
       (options.pollInterval ?? DEFAULT_POLL_INTERVAL_SECONDS) * 1000,
@@ -21,9 +22,11 @@ export async function settleCrawl(
       : undefined,
   });
 
-  if (status.status !== "done") {
+  if (PARTIAL_CRAWL_STATUSES.has(status.status)) {
     console.error(
       `Warning: crawl ${crawlId} ended with status ${status.status}${status.reason ? ` (${status.reason})` : ""}`
     );
   }
+
+  return status;
 }

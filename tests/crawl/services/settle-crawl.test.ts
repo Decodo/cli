@@ -47,7 +47,15 @@ describe("settleCrawl", () => {
     ]);
   });
 
-  it("warns when the crawl does not finish cleanly", async () => {
+  it("returns the final status", async () => {
+    const faulted = { ...DONE, status: "faulted" };
+    await expect(settleCrawl(apiWith(faulted), "abc", {})).resolves.toEqual(
+      faulted
+    );
+    expect(stderr).toEqual([]);
+  });
+
+  it("warns when the crawl is truncated", async () => {
     await settleCrawl(
       apiWith({ ...DONE, status: "truncated", reason: "max_duration" }),
       "abc",

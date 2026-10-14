@@ -4,6 +4,7 @@ import {
   DEFAULT_CRAWL_TIMEOUT_SECONDS,
   DEFAULT_POLL_INTERVAL_SECONDS,
 } from "../constants.js";
+import { parsePollInterval } from "../services/parse-poll-interval.js";
 
 export function attachWaitOptions(command: Command, waitHelp: string): Command {
   return command
@@ -12,7 +13,7 @@ export function attachWaitOptions(command: Command, waitHelp: string): Command {
     .option(
       "--poll-interval <seconds>",
       `Seconds between status checks (with --wait, default: ${DEFAULT_POLL_INTERVAL_SECONDS})`,
-      parsePositiveInt
+      parsePollInterval
     )
     .option(
       "--timeout <seconds>",

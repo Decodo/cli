@@ -21,12 +21,13 @@ export async function waitForCrawl(
   onStatus?.(status);
 
   while (status.status === "pending") {
-    if (Date.now() + pollIntervalMs > deadline) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
       throw new TimeoutError(
         `Crawl ${crawlId} did not finish within ${timeoutMs / 1000}s. It is still running; run \`decodo crawl cancel ${crawlId}\` to stop it.`
       );
     }
-    await sleep(pollIntervalMs);
+    await sleep(Math.min(pollIntervalMs, remainingMs));
     status = await api.getCrawlStatus(crawlId);
     onStatus?.(status);
   }

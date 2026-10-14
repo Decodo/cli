@@ -24,4 +24,14 @@ describe("attachWaitOptions", () => {
       command.options.find((option) => option.long === "--wait")?.description
     ).toBe("Wait for it");
   });
+
+  it("rejects a poll interval too large for a timer", () => {
+    const command = attachWaitOptions(new Command("probe"), "Wait for it")
+      .exitOverride()
+      .configureOutput({ writeErr: () => undefined });
+
+    expect(() =>
+      command.parse(["--poll-interval", "3000000"], { from: "user" })
+    ).toThrow("Must be at most 2147483.");
+  });
 });

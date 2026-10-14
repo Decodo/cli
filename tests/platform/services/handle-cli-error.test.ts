@@ -8,6 +8,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiKeyRequiredError } from "../../../src/auth/errors/api-key-required-error.js";
 import { AuthRequiredError } from "../../../src/auth/errors/auth-required-error.js";
+import { CrawlFailedError } from "../../../src/crawl/errors/crawl-failed-error.js";
 import { ScrapeFailedError } from "../../../src/output/errors/scrape-failed-error.js";
 import { CliUsageError } from "../../../src/platform/errors/cli-usage-error.js";
 import { handleCliError } from "../../../src/platform/services/handle-cli-error.js";
@@ -120,6 +121,13 @@ describe("handleCliError", () => {
     expect(() => handleCliError(err)).toThrow("process.exit:7");
     expect(exitCode).toBe(7);
     expect(stderr.join("\n")).toContain("Trends request was rejected");
+  });
+
+  it("maps crawl failures to exit code 7", () => {
+    const err = new CrawlFailedError("abc", "faulted");
+
+    expect(() => handleCliError(err)).toThrow("process.exit:7");
+    expect(stderr.join("\n")).toContain("Crawl abc ended with status faulted.");
   });
 
   it("maps syscall-coded network failures in the cause chain to exit code 7", () => {

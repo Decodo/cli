@@ -37,8 +37,20 @@ describe("waitForCrawl", () => {
     expect(status.status).toBe("cancelled");
   });
 
+  it("uses the time left before the deadline instead of giving up early", async () => {
+    const api = apiReturning("pending", "done");
+
+    const status = await waitForCrawl(api, "abc", {
+      pollIntervalMs: 60_000,
+      timeoutMs: 20,
+    });
+
+    expect(status.status).toBe("done");
+    expect(api.getCrawlStatus).toHaveBeenCalledTimes(2);
+  });
+
   it("throws a TimeoutError naming the cancel command", async () => {
-    const api = apiReturning("pending");
+    const api = apiReturning("pending", "pending");
 
     await expect(
       waitForCrawl(api, "abc", { pollIntervalMs: 2000, timeoutMs: 1000 })
