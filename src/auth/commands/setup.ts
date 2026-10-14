@@ -58,26 +58,33 @@ async function verifyCredential(value: string): Promise<AuthCredential> {
   }
 }
 
-export const setupCommand = new Command("setup")
-  .description("Configure the Decodo CLI with your API key or auth token")
-  .option("--token <value>", "Web Data API key or auth token (non-interactive)")
-  .action(async (options: SetupOptions, command) => {
-    const rootOpts = getRootOpts(command);
-    const token = (
-      options.token?.trim() ||
-      rootOpts.token?.trim() ||
-      (await promptHidden(TOKEN_PROMPT))
-    ).trim();
+export function createSetupCommand(): Command {
+  return new Command("setup")
+    .description("Configure the Decodo CLI with your API key or auth token")
+    .option(
+      "--token <value>",
+      "Web Data API key or auth token (non-interactive)"
+    )
+    .action(async (options: SetupOptions, command) => {
+      const rootOpts = getRootOpts(command);
+      const token = (
+        options.token?.trim() ||
+        rootOpts.token?.trim() ||
+        (await promptHidden(TOKEN_PROMPT))
+      ).trim();
 
-    if (!token) {
-      handleCliError(new CliUsageError("API key or auth token is required."));
-    }
+      if (!token) {
+        handleCliError(new CliUsageError("API key or auth token is required."));
+      }
 
-    try {
-      const credential = await verifyCredential(token);
-      await writeConfig(toConfig(credential));
-      console.log(`Setup complete. Configuration saved to ${getConfigPath()}`);
-    } catch (err) {
-      handleCliError(err, { fallbackMessage: "Setup failed." });
-    }
-  });
+      try {
+        const credential = await verifyCredential(token);
+        await writeConfig(toConfig(credential));
+        console.log(
+          `Setup complete. Configuration saved to ${getConfigPath()}`
+        );
+      } catch (err) {
+        handleCliError(err, { fallbackMessage: "Setup failed." });
+      }
+    });
+}

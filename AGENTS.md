@@ -29,7 +29,8 @@ Modules:
 
 - `cli/` — root command registration, ordering, global options, verbose logging
 - `auth/` — token resolution (flag > env > config file), setup/reset/whoami commands
-- `scrape/` — scrape/search/screenshot commands, schema loading, request building, the SDK client
+- `scrape/` — scrape/screenshot commands, schema loading, request building, the SDK client
+- `search/`, `map/`, `crawl/` — Data API commands (API key only); crawl reuses map's site options
 - `output/` — output format handling (text, JSON, NDJSON, PNG), request defaults
 - `platform/` — OS-level concerns: config paths, file/binary writes, hidden prompts, central error handler
 
