@@ -70,7 +70,7 @@ Common scenarios:
 
 1. **Create a free account** at [dashboard.decodo.com](https://dashboard.decodo.com/) — get up to 2K free requests with no credit card required.
 2. **Get your Web Data API key** from your Web Data API subscription on the Decodo [dashboard](https://dashboard.decodo.com/web-data/playground). Older plans only have a basic authentication token, which also works.
-3. **Install Node.js 18+** from [nodejs.org](https://nodejs.org/) (required for npm or `npx`).
+3. **Install Node.js 22+** from [nodejs.org](https://nodejs.org/) (required for npm or `npx`).
 4. **Install the CLI** using one of the methods below.
 5. **Authenticate and run** your first scrape:
 
@@ -82,7 +82,7 @@ decodo search "decodo scraping api"
 
 ## Installation
 
-> **Requires [Node.js](https://nodejs.org/) 18+**
+> **Requires [Node.js](https://nodejs.org/) 22+**
 
 ### macOS / Linux (recommended)
 
@@ -319,7 +319,7 @@ Use `-o shot.png` or redirect: `decodo screenshot <url> > shot.png`.
 
 ### Prerequisites
 
-- Node.js 18+ (24 recommended)
+- Node.js 22+ (24 recommended)
 - [pnpm](https://pnpm.io/) 10.x (`corepack enable` if needed)
 
 ### Install and build

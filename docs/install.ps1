@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 
 $PackageName = '@decodo/cli'
 $CommandName = 'decodo'
-$MinNodeMajor = 18
+$MinNodeMajor = 22
 
 $script:OrigPath = $env:PATH
 $script:UserPrefix = $null

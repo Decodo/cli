@@ -1,6 +1,6 @@
 {
   "name": "@decodo/cli",
-  "version": "2.0.0",
+  "version": "0.0.0-semantic-release",
   "description": "Official CLI for the Decodo APIs",
   "license": "MIT",
   "type": "module",
@@ -33,7 +33,7 @@
     "prepack": "pnpm build"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
@@ -44,6 +44,8 @@
     "@biomejs/biome": "2.4.15",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^25.7.0",
+    "conventional-changelog-conventionalcommits": "^10.4.1",
+    "semantic-release": "^25.0.9",
     "typescript": "^5.3.3",
     "ultracite": "7.7.0",
     "vitest": "^3.2.0"
