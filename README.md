@@ -68,7 +68,7 @@ Common scenarios:
 
 ## Quick start
 
-1. **Create a free account** at [dashboard.decodo.com](https://dashboard.decodo.com/) — get up to 2K free requests with no credit card required.
+1. **Create a free account** at [dashboard.decodo.com](https://dashboard.decodo.com/) — get up to 10K free requests with no credit card required.
 2. **Get your Web Data API key** from your Web Data API subscription on the Decodo [dashboard](https://dashboard.decodo.com/web-data/playground). Older plans only have a basic authentication token, which also works.
 3. **Install Node.js 22+** from [nodejs.org](https://nodejs.org/) (required for npm or `npx`).
 4. **Install the CLI** using one of the methods below.
@@ -231,7 +231,7 @@ decodo google-search "query" --format ndjson --full | jq -c '.url'
 decodo google-search "rust web scraping" --page-count 3 --parse | jq '.results.results.organic[].title'
 
 # Scrape JSON API endpoint
-decodo scrape https://ip.decodo.com/json | jq '.proxy.ip'
+decodo universal https://ip.decodo.com/json --no-markdown | jq '.proxy.ip'
 
 # Screenshot to file, then open
 decodo screenshot https://example.com -o shot.png
