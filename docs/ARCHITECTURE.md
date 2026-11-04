@@ -6,7 +6,7 @@ the patterns that keep it consistent. For day-to-day conventions and do's/don'ts
 
 ## Overview
 
-The CLI is a thin, schema-driven wrapper over the Decodo Web Scraping API. It does not
+The CLI is a thin, schema-driven wrapper over the Decodo Web Data API. It does not
 contain a hardcoded list of scrape targets or their parameters — it loads the API schema
 at startup and generates Commander subcommands from it. The runtime work of every scrape
 command is the same pipeline (resolve auth → build a request body → call the SDK → render
