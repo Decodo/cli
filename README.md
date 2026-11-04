@@ -43,7 +43,7 @@ The CLI is the right tool when you need direct shell access, scripting, or autom
 
 - **Structured output for automation**. Markdown (human-readable), JSON and NDJSON (pipe-friendly), and PNG screenshots built for scripts, data pipelines, and AI agent subprocesses.
 
-- **Built-in support for popular targets**. Tier-1 commands for scrape, search, map, crawl, and screenshot, plus schema-driven subcommands for Google Search and Bing, Amazon, Walmart, and Target, Reddit, TikTok, YouTube, and more. Run `decodo targets` to list everything available.
+- **Built-in support for popular targets**. Tier-1 commands for scrape, search, map, crawl, and screenshot, plus schema-driven subcommands for Google Search and Bing, Amazon, Walmart, and Target, TikTok, YouTube, and more. Run `decodo targets` to list everything available.
 
 - **Global proxy infrastructure**. Access 115M+ residential IPs across 195+ locations with IP rotation and geo-targeting. All requests are powered by the Decodo Web Data API with a 99.99% success rate.
 
@@ -61,7 +61,7 @@ Common scenarios:
 - **Data pipelines**. Stream NDJSON results into `jq`, databases, or downstream tools.
 - **Coding agent subprocesses**. Let AI agents call `decodo search` or `decodo scrape` directly.
 - **eCommerce intelligence**. Query Amazon, Walmart, and Target targets from the terminal.
-- **Social media data collection**. Gather posts and metadata from Reddit, TikTok, and YouTube.
+- **Social media data collection**. Gather posts and metadata from TikTok and YouTube.
 - **SERP monitoring**. Search Google and Bing programmatically as a SERP scraper with geo-targeting and parsed output.
 
 ## Quick start
