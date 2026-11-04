@@ -5,7 +5,7 @@ file short; the full design narrative lives in [`docs/ARCHITECTURE.md`](docs/ARC
 
 ## What this is
 
-An ESM TypeScript CLI (`decodo`) that wraps the Decodo Web Scraping API via
+An ESM TypeScript CLI (`decodo`) that wraps the Decodo Web Data API via
 [`@decodo/sdk-ts`](https://www.npmjs.com/package/@decodo/sdk-ts). It turns each API
 scrape target into a subcommand and adds shell-native output modes. Built with
 [Commander](https://github.com/tj/commander.js), bundled as ESM, run on Node >= 22
