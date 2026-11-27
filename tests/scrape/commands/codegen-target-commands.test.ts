@@ -1,9 +1,13 @@
 import { BundledSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCodegenTargetCommands } from "../../../src/scrape/commands/codegen-target-commands.js";
 
 describe("createCodegenTargetCommands", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("builds one subcommand per target", () => {
     const program = new Command();
     const schema = BundledSchema.shared;
@@ -23,9 +27,16 @@ describe("createCodegenTargetCommands", () => {
 
   it("uses a generic description for targets without a real group", () => {
     const schema = BundledSchema.shared;
+    const getTargetMeta = schema.getTargetMeta.bind(schema);
+    vi.spyOn(schema, "getTargetMeta").mockImplementation((target) => {
+      const meta = getTargetMeta(target);
+      return target === "google_search" && meta
+        ? { ...meta, group: "None" }
+        : meta;
+    });
     const commands = createCodegenTargetCommands(schema);
 
-    const ungrouped = commands.find((cmd) => cmd.name() === "youtube-video");
+    const ungrouped = commands.find((cmd) => cmd.name() === "google-search");
     expect(ungrouped?.description()).toBe("Scrape target");
 
     const grouped = commands.find((cmd) => cmd.name() === "amazon-product");
