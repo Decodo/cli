@@ -13,14 +13,14 @@ describe("getTaskResults", () => {
   it("returns the results of a finished task", async () => {
     const results = { results: [{ content: { ok: true } }] };
 
-    await expect(getTaskResults(apiReturning(results), "123")).resolves.toBe(
-      results
-    );
+    await expect(
+      getTaskResults(apiReturning(results), "task", "123")
+    ).resolves.toBe(results);
   });
 
   it("throws a TaskResultsNotReadyError when there are no results yet", async () => {
     await expect(
-      getTaskResults(apiReturning(undefined), "123")
-    ).rejects.toThrow(new TaskResultsNotReadyError("123"));
+      getTaskResults(apiReturning(undefined), "task", "123")
+    ).rejects.toThrow(new TaskResultsNotReadyError("task", "123"));
   });
 });

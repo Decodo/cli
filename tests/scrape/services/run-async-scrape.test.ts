@@ -75,7 +75,7 @@ describe("runAsyncScrape", () => {
 
     await expect(
       runAsyncScrape(api, { body: BODY, options: { async: true, wait: true } })
-    ).rejects.toThrow(new TaskFailedError("123", "faulted"));
+    ).rejects.toThrow(new TaskFailedError("task", "123", "faulted"));
     expect(flows.results).not.toHaveBeenCalled();
   });
 });

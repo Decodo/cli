@@ -1,9 +1,12 @@
+import { BundledSchema } from "@decodo/sdk-ts";
+import type { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AUTH_TYPE } from "../../../src/auth/constants.js";
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
-import { createTaskCommand } from "../../../src/scrape/commands/task.js";
+import { createCodegenJobCommands } from "../../../src/scrape/commands/codegen-job-commands.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 import { runDataCommand } from "../../cli/helpers/run-data-command.js";
+import { schemaWithCliTools } from "../helpers/schema-with-cli-tools.js";
 
 vi.mock("../../../src/auth/services/resolve-token.js", () => ({
   resolveAuthToken: vi.fn(),
@@ -15,7 +18,11 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
 
 const RESULTS = { results: [{ content: { ok: true } }] };
 
-describe("createTaskCommand", () => {
+function createTaskCommand(): Command {
+  return createCodegenJobCommands(schemaWithCliTools())[0];
+}
+
+describe("createCodegenJobCommands", () => {
   let exitCode: number | undefined;
   let stdout: string[];
   let stderr: string[];
@@ -71,6 +78,54 @@ describe("createTaskCommand", () => {
     vi.restoreAllMocks();
   });
 
+  it("builds no commands when the schema has no cli surface", () => {
+    expect(createCodegenJobCommands(BundledSchema.shared)).toEqual([]);
+  });
+
+  it("builds one command per flow with a subcommand per step", () => {
+    const commands = createCodegenJobCommands(schemaWithCliTools());
+
+    expect(commands.map((command) => command.name())).toEqual(["task"]);
+    expect(commands[0].commands.map((command) => command.name())).toEqual([
+      "status",
+      "results",
+    ]);
+    expect(commands[0].commands[0].description()).toBe(
+      "Show the status of an async task as JSON"
+    );
+  });
+
+  it("skips tools that start a job or belong to a call flow", () => {
+    const commands = createCodegenJobCommands(
+      schemaWithCliTools([
+        {
+          name: "task_start",
+          description: "Start",
+          flow: "task",
+          step: "start",
+        },
+        { name: "search", description: "Search", flow: "search" },
+      ])
+    );
+
+    expect(commands).toEqual([]);
+  });
+
+  it("creates the client with the schema the commands were built from", async () => {
+    const schema = schemaWithCliTools();
+
+    await runDataCommand(createCodegenJobCommands(schema)[0], [
+      "task",
+      "status",
+      "123",
+    ]);
+
+    expect(createDecodoClient).toHaveBeenCalledWith(
+      { type: AUTH_TYPE.API_KEY, value: "key" },
+      schema
+    );
+  });
+
   it("prints the task status as JSON", async () => {
     await runDataCommand(createTaskCommand(), ["task", "status", "123"]);
 
@@ -111,7 +166,7 @@ describe("createTaskCommand", () => {
     ).rejects.toThrow("process.exit:1");
 
     expect(exitCode).toBe(1);
-    expect(stderr.join("\n")).toContain("Task 123 has no results yet.");
+    expect(stderr.join("\n")).toContain("task 123 has no results yet.");
   });
 
   it("exits 7 when the waited task is faulted", async () => {

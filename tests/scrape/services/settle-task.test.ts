@@ -16,7 +16,7 @@ describe("settleTask", () => {
   it("waits on the task flow with the default timeout", async () => {
     const { api, flows } = apiWith("done");
 
-    await expect(settleTask(api, "123", {})).resolves.toBe(undefined);
+    await expect(settleTask(api, "task", "123", {})).resolves.toBe(undefined);
     expect(flows.wait).toHaveBeenCalledWith("task", "123", {
       pollInterval: undefined,
       timeout: 600_000,
@@ -26,7 +26,7 @@ describe("settleTask", () => {
   it("passes the poll interval and timeout in milliseconds", async () => {
     const { api, flows } = apiWith("done");
 
-    await settleTask(api, "123", { pollInterval: 2, timeout: 30 });
+    await settleTask(api, "task", "123", { pollInterval: 2, timeout: 30 });
 
     expect(flows.wait).toHaveBeenCalledWith("task", "123", {
       pollInterval: 2000,
@@ -37,8 +37,8 @@ describe("settleTask", () => {
   it("throws a TaskFailedError when the flow reports a failed task", async () => {
     const { api } = apiWith("faulted");
 
-    await expect(settleTask(api, "123", {})).rejects.toThrow(
-      new TaskFailedError("123", "faulted")
+    await expect(settleTask(api, "task", "123", {})).rejects.toThrow(
+      new TaskFailedError("task", "123", "faulted")
     );
   });
 });

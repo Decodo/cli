@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { BundledSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { describe, expect, it } from "vitest";
 import { createResetCommand } from "../../src/auth/commands/reset.js";
@@ -8,12 +7,13 @@ import { createSetupCommand } from "../../src/auth/commands/setup.js";
 import { createWhoamiCommand } from "../../src/auth/commands/whoami.js";
 import { createCrawlCommand } from "../../src/crawl/commands/crawl.js";
 import { createMapCommand } from "../../src/map/commands/map.js";
+import { createCodegenJobCommands } from "../../src/scrape/commands/codegen-job-commands.js";
 import { createCodegenTargetCommands } from "../../src/scrape/commands/codegen-target-commands.js";
 import { createListTargetsCommand } from "../../src/scrape/commands/list-targets.js";
 import { createScrapeCommand } from "../../src/scrape/commands/scrape.js";
 import { createScreenshotCommand } from "../../src/scrape/commands/screenshot.js";
-import { createTaskCommand } from "../../src/scrape/commands/task.js";
 import { createSearchCommand } from "../../src/search/commands/search.js";
+import { schemaWithCliTools } from "../scrape/helpers/schema-with-cli-tools.js";
 
 const README_PATH = fileURLToPath(new URL("../../README.md", import.meta.url));
 
@@ -30,7 +30,7 @@ const GLOBAL_FLAGS = new Set([
 const SHELL_BREAK = new Set(["|", "&&", "||", ";", "&", ">", ">>", "<"]);
 
 function buildProgram(): Command {
-  const schema = BundledSchema.shared;
+  const schema = schemaWithCliTools();
   const program = new Command("decodo")
     .version("0.0.0", "-V, --version")
     .option("-v, --verbose")
@@ -45,7 +45,7 @@ function buildProgram(): Command {
     createMapCommand(),
     createCrawlCommand(),
     createScreenshotCommand(schema),
-    createTaskCommand(),
+    ...createCodegenJobCommands(schema),
     createListTargetsCommand(schema),
     ...createCodegenTargetCommands(schema),
   ]) {

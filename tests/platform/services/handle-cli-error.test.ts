@@ -132,10 +132,10 @@ describe("handleCliError", () => {
   });
 
   it("maps task failures to exit code 7", () => {
-    const err = new TaskFailedError("123", "faulted");
+    const err = new TaskFailedError("task", "123", "faulted");
 
     expect(() => handleCliError(err)).toThrow("process.exit:7");
-    expect(stderr.join("\n")).toContain("Task 123 ended with status faulted.");
+    expect(stderr.join("\n")).toContain("task 123 ended with status faulted.");
   });
 
   it("maps syscall-coded network failures in the cause chain to exit code 7", () => {

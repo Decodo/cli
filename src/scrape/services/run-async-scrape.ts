@@ -28,9 +28,9 @@ export async function runAsyncScrape(
 
   const taskId = String(task[api.flows.describe(TASK_FLOW, "job").idField]);
   process.stderr.write(`task ${taskId} started\n`);
-  await settleTask(api, taskId, options);
+  await settleTask(api, TASK_FLOW, taskId, options);
 
-  writeScrapeResponse(await getTaskResults(api, taskId), {
+  writeScrapeResponse(await getTaskResults(api, TASK_FLOW, taskId), {
     options,
     input,
     ...outputContext,
