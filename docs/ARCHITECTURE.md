@@ -32,8 +32,17 @@ Command assembly is two-layered:
   dynamically generated scrape commands, then sorts them with `sortCommandsByOrder` so
   help output has a stable, curated order (`ROOT_COMMAND_ORDER`).
 - `scrape/register.ts` loads the schema once and builds the scrape-family commands:
-  `scrape`, `screenshot`, `targets` (list), plus one generated command per API
-  target from `codegen-target-commands.ts`.
+  `scrape`, `screenshot`, `targets` (list), plus one generated command per API target from
+  `codegen-target-commands.ts` and the job commands from `codegen-job-commands.ts`.
+- `codegen-job-commands.ts` reads the schema's `cli` surface: every tool with a `status`,
+  `results` or `cancel` step of a job flow becomes `decodo <flow> <step> <id>` (today
+  `task status|results`). A schema without that surface, such as an older bundled one,
+  yields no job commands.
+- Every generated target command takes `--async`, which creates an async task through the
+  SDK's `task` flow instead of a real-time scrape (`scrape/services/run-async-scrape.ts`);
+  `--wait` polls the task and prints its result. Endpoints, statuses and the poll interval
+  come from the schema through `webScrapingApi.flows`. Like the job commands, which run
+  through `cli/services/run-data-action.ts`, `--async` requires an API key.
 - The Data API commands `search`, `map`, and `crawl` (with `crawl status|results|cancel`)
   live in their own modules and are registered directly in `cli/register.ts`. They don't
   use the schema; each runs through `cli/services/run-data-action.ts`, which requires an

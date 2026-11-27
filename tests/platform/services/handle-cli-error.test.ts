@@ -12,6 +12,7 @@ import { CrawlFailedError } from "../../../src/crawl/errors/crawl-failed-error.j
 import { ScrapeFailedError } from "../../../src/output/errors/scrape-failed-error.js";
 import { CliUsageError } from "../../../src/platform/errors/cli-usage-error.js";
 import { handleCliError } from "../../../src/platform/services/handle-cli-error.js";
+import { TaskFailedError } from "../../../src/scrape/errors/task-failed-error.js";
 
 describe("handleCliError", () => {
   let exitCode: number | undefined;
@@ -128,6 +129,13 @@ describe("handleCliError", () => {
 
     expect(() => handleCliError(err)).toThrow("process.exit:7");
     expect(stderr.join("\n")).toContain("Crawl abc ended with status faulted.");
+  });
+
+  it("maps task failures to exit code 7", () => {
+    const err = new TaskFailedError("task", "123", "faulted");
+
+    expect(() => handleCliError(err)).toThrow("process.exit:7");
+    expect(stderr.join("\n")).toContain("task 123 ended with status faulted.");
   });
 
   it("maps syscall-coded network failures in the cause chain to exit code 7", () => {

@@ -10,6 +10,7 @@ import { ApiKeyRequiredError } from "../../auth/errors/api-key-required-error.js
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { CrawlFailedError } from "../../crawl/errors/crawl-failed-error.js";
 import { ScrapeFailedError } from "../../output/errors/scrape-failed-error.js";
+import { TaskFailedError } from "../../scrape/errors/task-failed-error.js";
 import { EXIT } from "../constants.js";
 import { CliUsageError } from "../errors/cli-usage-error.js";
 
@@ -70,7 +71,11 @@ export function resolveCliExitCode(err: unknown): number {
     return EXIT.TIMEOUT;
   }
 
-  if (err instanceof ScrapeFailedError || err instanceof CrawlFailedError) {
+  if (
+    err instanceof ScrapeFailedError ||
+    err instanceof CrawlFailedError ||
+    err instanceof TaskFailedError
+  ) {
     return EXIT.NETWORK;
   }
 

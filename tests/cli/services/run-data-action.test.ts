@@ -1,3 +1,4 @@
+import { BundledSchema } from "@decodo/sdk-ts";
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AUTH_TYPE } from "../../../src/auth/constants.js";
@@ -91,6 +92,33 @@ describe("createDataAction", () => {
     await expect(run(handler)).rejects.toThrow("process.exit:3");
     expect(handler).not.toHaveBeenCalled();
     expect(stderr[0]).toContain("needs a Web Data API key");
+  });
+
+  it("creates the client with the schema it was given", async () => {
+    const credential = { type: AUTH_TYPE.API_KEY, value: "key" } as const;
+    vi.mocked(resolveAuthToken).mockResolvedValue({
+      credential,
+      source: "flag",
+    });
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(
+        new Command("probe")
+          .argument("<input>")
+          .action(
+            createDataAction(
+              vi.fn().mockResolvedValue(undefined),
+              BundledSchema.shared
+            )
+          )
+      );
+
+    await program.parseAsync(["probe", "value"], { from: "user" });
+
+    expect(createDecodoClient).toHaveBeenCalledWith(
+      credential,
+      BundledSchema.shared
+    );
   });
 
   it("routes handler errors through the CLI error handler", async () => {

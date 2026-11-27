@@ -54,6 +54,22 @@ describe("configureTargetCommand", () => {
       true
     );
   });
+
+  it("adds the async task options to a target command", () => {
+    const command = new Command("google-search");
+    configureTargetCommand(command, "google_search", schema);
+
+    const flags = command.options.map((opt) => opt.long);
+
+    expect(flags).toEqual(
+      expect.arrayContaining([
+        "--async",
+        "--wait",
+        "--poll-interval",
+        "--timeout",
+      ])
+    );
+  });
 });
 
 describe("buildScrapeBody", () => {

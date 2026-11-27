@@ -1,3 +1,4 @@
+import type { DecodoSchema } from "@decodo/sdk-ts";
 import type { Command } from "commander";
 import { AUTH_TYPE } from "../../auth/constants.js";
 import { ApiKeyRequiredError } from "../../auth/errors/api-key-required-error.js";
@@ -9,7 +10,10 @@ import type { DataActionHandler } from "../types/data-action.js";
 import { getRootOpts } from "./global-opts.js";
 import { verboseLog } from "./verbose-log.js";
 
-export function createDataAction<Options>(handler: DataActionHandler<Options>) {
+export function createDataAction<Options>(
+  handler: DataActionHandler<Options>,
+  schema?: DecodoSchema
+) {
   return async (
     input: string,
     _localOptions: unknown,
@@ -32,7 +36,7 @@ export function createDataAction<Options>(handler: DataActionHandler<Options>) {
         throw new ApiKeyRequiredError();
       }
 
-      const { webScrapingApi } = createDecodoClient(auth.credential);
+      const { webScrapingApi } = createDecodoClient(auth.credential, schema);
       await handler({ api: webScrapingApi, input, options, verbose });
     } catch (err) {
       handleCliError(err, { fallbackMessage: "Request failed." });

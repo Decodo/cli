@@ -153,6 +153,7 @@ You should see Markdown or parsed JSON within seconds. If you see an auth error,
 | `decodo map <url>` | List a site's URLs, one per line (`--limit`, `--sitemap`, `--full`) |
 | `decodo crawl <url>` | Start a crawl and print its id; `--wait` prints pages as NDJSON |
 | `decodo screenshot <url>` | Capture a PNG screenshot (`-o` file or directory) |
+| `decodo task status\|results <id>` | Check or collect a task started with `--async` |
 | `decodo targets` | List all scrape targets by group |
 | `decodo setup` | Save your API key or auth token interactively |
 | `decodo whoami` | Show configured auth source |
@@ -177,7 +178,7 @@ decodo crawl results <id> --wait -o pages.ndjson
 decodo crawl cancel <id>
 ```
 
-`crawl results --wait` lets an agent start a crawl, keep working, and collect the pages later. With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `3600`, exit code `6`); the crawl keeps running until you cancel it. The crawl id goes to stderr as soon as the crawl starts. A `truncated` or `cancelled` crawl prints a warning; a `faulted` crawl still prints its pages, then exits `7`.
+`crawl results --wait` lets an agent start a crawl, keep working, and collect the pages later. With `--wait`, the CLI polls every `--poll-interval` seconds and gives up after `--timeout` seconds (default `3600`, exit code `6`); the crawl keeps running until you cancel it. The crawl id goes to stderr as soon as the crawl starts. A `truncated` or `cancelled` crawl prints a warning; a `faulted` crawl still prints its pages, then exits `7`.
 
 > **Upgrading from 1.x:** `decodo search` used the `google_search` scrape target. Use `decodo google-search` or `decodo bing-search` for the previous behaviour.
 
@@ -192,6 +193,25 @@ decodo universal --help
 ```
 
 Use `decodo <target> --help` for target-specific flags (`--parse`, `--geo`, and others from the schema).
+
+### Async tasks
+
+Add `--async` to any target command to create an async task instead of waiting for the scrape. The command prints the task as JSON, including its `id`, and returns right away:
+
+```bash
+decodo google-search "decodo web data api" --async
+decodo task status <id>
+decodo task results <id>
+decodo task results <id> --wait
+```
+
+Add `--wait` to create the task and print its result in one command:
+
+```bash
+decodo google-search "decodo web data api" --async --wait
+```
+
+With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `600`, exit code `6`); the task keeps running. The task id goes to stderr as soon as the task is created. A `faulted` task exits `7`. `task results` without `--wait` exits `1` when the task has no results yet. `--async` and the `task` commands need an API key; a basic auth token cannot use them.
 
 ## Output modes
 

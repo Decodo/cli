@@ -6,6 +6,7 @@ export const ROOT_COMMAND_ORDER = [
   "map",
   "crawl",
   "screenshot",
+  "task",
   "setup",
   "reset",
   "whoami",

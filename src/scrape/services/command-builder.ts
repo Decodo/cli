@@ -3,6 +3,7 @@ import { type Command, InvalidArgumentError, Option } from "commander";
 import type { JSONSchema4 } from "json-schema";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { applyRequestDefaults } from "../../output/services/apply-request-defaults.js";
+import { attachAsyncOptions } from "../commands/attach-async-options.js";
 import type { TargetCommandConfig } from "../types/target-command.js";
 import { snakeToCamel, snakeToKebab } from "./naming.js";
 import { getPrimaryInputField } from "./primary-input.js";
@@ -120,6 +121,7 @@ export function configureTargetCommand(
   }
 
   attachScrapeOutputOptions(command);
+  attachAsyncOptions(command);
 
   return { target, primaryField, optionFields };
 }
