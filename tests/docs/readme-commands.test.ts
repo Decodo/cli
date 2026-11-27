@@ -12,6 +12,7 @@ import { createCodegenTargetCommands } from "../../src/scrape/commands/codegen-t
 import { createListTargetsCommand } from "../../src/scrape/commands/list-targets.js";
 import { createScrapeCommand } from "../../src/scrape/commands/scrape.js";
 import { createScreenshotCommand } from "../../src/scrape/commands/screenshot.js";
+import { createTaskCommand } from "../../src/scrape/commands/task.js";
 import { createSearchCommand } from "../../src/search/commands/search.js";
 
 const README_PATH = fileURLToPath(new URL("../../README.md", import.meta.url));
@@ -44,6 +45,7 @@ function buildProgram(): Command {
     createMapCommand(),
     createCrawlCommand(),
     createScreenshotCommand(schema),
+    createTaskCommand(),
     createListTargetsCommand(schema),
     ...createCodegenTargetCommands(schema),
   ]) {

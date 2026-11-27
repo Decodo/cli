@@ -6,6 +6,7 @@ import { ConfigParseError } from "../../../src/auth/errors/config-parse-error.js
 import { resolveAuthToken } from "../../../src/auth/services/resolve-token.js";
 import { attachScrapeOutputOptions } from "../../../src/output/commands/attach-output-options.js";
 import { writeBinaryOutput } from "../../../src/platform/services/write-binary.js";
+import { attachAsyncOptions } from "../../../src/scrape/commands/attach-async-options.js";
 import { createDecodoClient } from "../../../src/scrape/services/client.js";
 import { createTargetAction } from "../../../src/scrape/services/run-target-scrape.js";
 
@@ -260,5 +261,66 @@ describe("createTargetAction", () => {
       target: "universal_ecommerce",
     });
     expect(stdout).toBe('{"ok":true}\n');
+  });
+
+  it("creates a task instead of scraping when --async is set", async () => {
+    const scrape = vi.fn();
+    const scrapeAsync = vi
+      .fn()
+      .mockResolvedValue({ id: "123", status: "pending" });
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { scrape, scrapeAsync },
+    } as never);
+
+    const googleSearch = new Command("google-search")
+      .argument("<input>")
+      .action(createTargetAction("google_search", BundledSchema.shared));
+    attachScrapeOutputOptions(googleSearch);
+    attachAsyncOptions(googleSearch);
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(googleSearch);
+
+    await program.parseAsync(
+      ["google-search", "coffee", "--async", "--token", "test-token"],
+      { from: "user" }
+    );
+
+    expect(scrape).not.toHaveBeenCalled();
+    expect(scrapeAsync).toHaveBeenCalledWith({
+      target: "google_search",
+      query: "coffee",
+      parse: true,
+      markdown: false,
+    });
+    expect(stdout).toBe('{"id":"123","status":"pending"}\n');
+  });
+
+  it("exits with a usage error when --wait is set without --async", async () => {
+    const scrape = vi.fn();
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { scrape },
+    } as never);
+
+    const googleSearch = new Command("google-search")
+      .argument("<input>")
+      .action(createTargetAction("google_search", BundledSchema.shared));
+    attachScrapeOutputOptions(googleSearch);
+    attachAsyncOptions(googleSearch);
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(googleSearch);
+
+    await expect(
+      program.parseAsync(
+        ["google-search", "coffee", "--wait", "--token", "test-token"],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:2");
+
+    expect(exitCode).toBe(2);
+    expect(scrape).not.toHaveBeenCalled();
   });
 });

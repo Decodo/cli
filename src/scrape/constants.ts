@@ -2,6 +2,19 @@ export const INTEGRATION_HEADER = "cli";
 
 export const SCHEMA_TTL_MS = 3_600_000;
 
+export const PENDING_TASK_STATUS = "pending";
+
+export const DONE_TASK_STATUS = "done";
+
+export const DEFAULT_TASK_POLL_INTERVAL_SECONDS = 5;
+
+export const DEFAULT_TASK_TIMEOUT_SECONDS = 600;
+
+export const TASK_WAIT_ONLY_FLAGS = {
+  pollInterval: "--poll-interval",
+  timeout: "--timeout",
+} as const;
+
 export const PRIMARY_INPUT_FIELDS = [
   "query",
   "url",

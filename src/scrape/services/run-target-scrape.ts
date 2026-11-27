@@ -8,14 +8,17 @@ import { writeScrapeResponse } from "../../output/services/write-scrape-response
 import type { OutputOptions } from "../../output/types/output-options.js";
 import type { WriteScrapeResponseContext } from "../../output/types/write-scrape-response.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
+import type { AsyncOptions } from "../types/async-options.js";
 import type {
   ExecuteScrapeOptions,
   OutputContextBuilder,
   ScrapeBodyBuilder,
 } from "../types/run-target-scrape.js";
+import { assertAsyncFlags } from "./assert-async-flags.js";
 import { createDecodoClient } from "./client.js";
 import { buildScrapeBody, getTargetCommandConfig } from "./command-builder.js";
 import { formatScrapeRequestLog } from "./format-scrape-request-log.js";
+import { runAsyncScrape } from "./run-async-scrape.js";
 
 async function executeScrape({
   credential,
@@ -27,6 +30,17 @@ async function executeScrape({
   verbose = false,
 }: ExecuteScrapeOptions): Promise<void> {
   const client = createDecodoClient(credential, schema);
+
+  if ((options as AsyncOptions).async) {
+    await runAsyncScrape(client.webScrapingApi, {
+      body,
+      input,
+      options: options as AsyncOptions & OutputOptions,
+      outputContext,
+    });
+    return;
+  }
+
   const startedAt = Date.now();
   const response = await client.webScrapingApi.scrape(
     body as unknown as ScrapeRequest
@@ -88,6 +102,7 @@ export function createTargetAction(
     const verbose = rootOpts.verbose === true;
 
     try {
+      assertAsyncFlags(options as AsyncOptions);
       const auth = await resolveAuthToken({ token: rootOpts.token });
       verboseLog(
         verbose,
