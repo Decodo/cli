@@ -1,5 +1,7 @@
 import type { DecodoSchema, ScrapeRequest } from "@decodo/sdk-ts";
 import type { Command } from "commander";
+import { AUTH_TYPE } from "../../auth/constants.js";
+import { ApiKeyRequiredError } from "../../auth/errors/api-key-required-error.js";
 import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { resolveAuthToken } from "../../auth/services/resolve-token.js";
 import { getRootOpts } from "../../cli/services/global-opts.js";
@@ -32,6 +34,9 @@ async function executeScrape({
   const client = createDecodoClient(credential, schema);
 
   if ((options as AsyncOptions).async) {
+    if (credential.type !== AUTH_TYPE.API_KEY) {
+      throw new ApiKeyRequiredError();
+    }
     await runAsyncScrape(client.webScrapingApi, {
       body,
       input,

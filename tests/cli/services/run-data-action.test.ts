@@ -13,10 +13,7 @@ vi.mock("../../../src/scrape/services/client.js", () => ({
   createDecodoClient: vi.fn(),
 }));
 
-function run(
-  handler: Parameters<typeof createDataAction>[0],
-  config?: Parameters<typeof createDataAction>[1]
-) {
+function run(handler: Parameters<typeof createDataAction>[0]) {
   const program = new Command()
     .option("--token <token>")
     .option("-v, --verbose")
@@ -24,7 +21,7 @@ function run(
       new Command("probe")
         .argument("<input>")
         .option("--flag")
-        .action(createDataAction(handler, config))
+        .action(createDataAction(handler))
     );
 
   return program.parseAsync(["probe", "value", "--flag", "--token", "key"], {
@@ -94,18 +91,6 @@ describe("createDataAction", () => {
     await expect(run(handler)).rejects.toThrow("process.exit:3");
     expect(handler).not.toHaveBeenCalled();
     expect(stderr[0]).toContain("needs a Web Data API key");
-  });
-
-  it("accepts a basic token when the action is not API key only", async () => {
-    vi.mocked(resolveAuthToken).mockResolvedValue({
-      credential: { type: AUTH_TYPE.TOKEN, value: "dTpw" },
-      source: "config",
-    });
-    const handler = vi.fn().mockResolvedValue(undefined);
-
-    await run(handler, { apiKeyOnly: false });
-
-    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it("routes handler errors through the CLI error handler", async () => {

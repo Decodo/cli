@@ -2,11 +2,7 @@ export const INTEGRATION_HEADER = "cli";
 
 export const SCHEMA_TTL_MS = 3_600_000;
 
-export const PENDING_TASK_STATUS = "pending";
-
-export const DONE_TASK_STATUS = "done";
-
-export const DEFAULT_TASK_POLL_INTERVAL_SECONDS = 5;
+export const TASK_FLOW = "task";
 
 export const DEFAULT_TASK_TIMEOUT_SECONDS = 600;
 

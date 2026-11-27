@@ -5,7 +5,7 @@ import { getTaskResults } from "../../../src/scrape/services/get-task-results.js
 
 function apiReturning(results: unknown): WebScrapingApi {
   return {
-    getResults: vi.fn().mockResolvedValue(results),
+    flows: { results: vi.fn().mockResolvedValue(results) },
   } as unknown as WebScrapingApi;
 }
 
@@ -19,8 +19,8 @@ describe("getTaskResults", () => {
   });
 
   it("throws a TaskResultsNotReadyError when there are no results yet", async () => {
-    await expect(getTaskResults(apiReturning(null), "123")).rejects.toThrow(
-      new TaskResultsNotReadyError("123")
-    );
+    await expect(
+      getTaskResults(apiReturning(undefined), "123")
+    ).rejects.toThrow(new TaskResultsNotReadyError("123"));
   });
 });

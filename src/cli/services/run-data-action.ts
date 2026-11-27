@@ -5,17 +5,11 @@ import { AuthRequiredError } from "../../auth/errors/auth-required-error.js";
 import { resolveAuthToken } from "../../auth/services/resolve-token.js";
 import { handleCliError } from "../../platform/services/handle-cli-error.js";
 import { createDecodoClient } from "../../scrape/services/client.js";
-import type {
-  DataActionConfig,
-  DataActionHandler,
-} from "../types/data-action.js";
+import type { DataActionHandler } from "../types/data-action.js";
 import { getRootOpts } from "./global-opts.js";
 import { verboseLog } from "./verbose-log.js";
 
-export function createDataAction<Options>(
-  handler: DataActionHandler<Options>,
-  { apiKeyOnly = true }: DataActionConfig = {}
-) {
+export function createDataAction<Options>(handler: DataActionHandler<Options>) {
   return async (
     input: string,
     _localOptions: unknown,
@@ -34,7 +28,7 @@ export function createDataAction<Options>(
       if (!auth.credential) {
         throw new AuthRequiredError();
       }
-      if (apiKeyOnly && auth.credential.type !== AUTH_TYPE.API_KEY) {
+      if (auth.credential.type !== AUTH_TYPE.API_KEY) {
         throw new ApiKeyRequiredError();
       }
 

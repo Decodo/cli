@@ -178,7 +178,7 @@ decodo crawl results <id> --wait -o pages.ndjson
 decodo crawl cancel <id>
 ```
 
-`crawl results --wait` lets an agent start a crawl, keep working, and collect the pages later. With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `3600`, exit code `6`); the crawl keeps running until you cancel it. The crawl id goes to stderr as soon as the crawl starts. A `truncated` or `cancelled` crawl prints a warning; a `faulted` crawl still prints its pages, then exits `7`.
+`crawl results --wait` lets an agent start a crawl, keep working, and collect the pages later. With `--wait`, the CLI polls every `--poll-interval` seconds and gives up after `--timeout` seconds (default `3600`, exit code `6`); the crawl keeps running until you cancel it. The crawl id goes to stderr as soon as the crawl starts. A `truncated` or `cancelled` crawl prints a warning; a `faulted` crawl still prints its pages, then exits `7`.
 
 > **Upgrading from 1.x:** `decodo search` used the `google_search` scrape target. Use `decodo google-search` or `decodo bing-search` for the previous behaviour.
 
@@ -211,7 +211,7 @@ Add `--wait` to create the task and print its result in one command:
 decodo google-search "decodo web data api" --async --wait
 ```
 
-With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `600`, exit code `6`); the task keeps running. The task id goes to stderr as soon as the task is created. A `faulted` task exits `7`. `task results` without `--wait` exits `1` when the task has no results yet. Task commands accept an API key or a basic auth token.
+With `--wait`, the CLI polls every `--poll-interval` seconds (default `5`) and gives up after `--timeout` seconds (default `600`, exit code `6`); the task keeps running. The task id goes to stderr as soon as the task is created. A `faulted` task exits `7`. `task results` without `--wait` exits `1` when the task has no results yet. `--async` and the `task` commands need an API key; a basic auth token cannot use them.
 
 ## Output modes
 

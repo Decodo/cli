@@ -3,6 +3,7 @@ import { createDataAction } from "../../cli/services/run-data-action.js";
 import { attachScrapeOutputOptions } from "../../output/commands/attach-output-options.js";
 import { writeJsonOutput } from "../../output/services/write-json-output.js";
 import { writeScrapeResponse } from "../../output/services/write-scrape-response.js";
+import { TASK_FLOW } from "../constants.js";
 import { assertTaskWaitFlags } from "../services/assert-task-wait-flags.js";
 import { getTaskResults } from "../services/get-task-results.js";
 import { settleTask } from "../services/settle-task.js";
@@ -18,12 +19,9 @@ function createTaskStatusCommand(): Command {
     .argument("<id>", "Task id")
     .option("--pretty", "Pretty-print JSON on stdout")
     .action(
-      createDataAction<TaskStatusOptions>(
-        async ({ api, input, options }) => {
-          writeJsonOutput(await api.getStatus(input), options);
-        },
-        { apiKeyOnly: false }
-      )
+      createDataAction<TaskStatusOptions>(async ({ api, input, options }) => {
+        writeJsonOutput(await api.flows.status(TASK_FLOW, input), options);
+      })
     );
 }
 
@@ -38,17 +36,14 @@ function createTaskResultsCommand(): Command {
     command,
     "Wait for the task to finish before printing its result"
   ).action(
-    createDataAction<TaskResultsOptions>(
-      async ({ api, input, options }) => {
-        assertTaskWaitFlags(options);
-        if (options.wait) {
-          await settleTask(api, input, options);
-        }
+    createDataAction<TaskResultsOptions>(async ({ api, input, options }) => {
+      assertTaskWaitFlags(options);
+      if (options.wait) {
+        await settleTask(api, input, options);
+      }
 
-        writeScrapeResponse(await getTaskResults(api, input), { options });
-      },
-      { apiKeyOnly: false }
-    )
+      writeScrapeResponse(await getTaskResults(api, input), { options });
+    })
   );
 }
 

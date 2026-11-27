@@ -6,15 +6,17 @@ import { runAsyncScrape } from "../../../src/scrape/services/run-async-scrape.js
 const BODY = { target: "google_search", query: "coffee" };
 const TASK = { id: "123", status: "pending" };
 
-function apiWith(overrides: Record<string, unknown> = {}): WebScrapingApi {
-  return {
-    scrapeAsync: vi.fn().mockResolvedValue(TASK),
-    getStatus: vi.fn().mockResolvedValue({ id: "123", status: "done" }),
-    getResults: vi
+function apiWith(status = "done") {
+  const flows = {
+    start: vi.fn().mockResolvedValue(TASK),
+    wait: vi.fn().mockResolvedValue({ id: "123", status }),
+    hasFailed: vi.fn().mockReturnValue(status === "faulted"),
+    describe: vi.fn().mockReturnValue({ idField: "id", statusField: "status" }),
+    results: vi
       .fn()
       .mockResolvedValue({ results: [{ content: { ok: true } }] }),
-    ...overrides,
-  } as unknown as WebScrapingApi;
+  };
+  return { api: { flows } as unknown as WebScrapingApi, flows };
 }
 
 describe("runAsyncScrape", () => {
@@ -44,38 +46,36 @@ describe("runAsyncScrape", () => {
   });
 
   it("prints the created task and does not wait without --wait", async () => {
-    const api = apiWith();
+    const { api, flows } = apiWith();
 
     await runAsyncScrape(api, { body: BODY, options: { async: true } });
 
-    expect(api.scrapeAsync).toHaveBeenCalledWith(BODY);
-    expect(api.getStatus).not.toHaveBeenCalled();
-    expect(api.getResults).not.toHaveBeenCalled();
+    expect(flows.start).toHaveBeenCalledWith("task", BODY);
+    expect(flows.wait).not.toHaveBeenCalled();
+    expect(flows.results).not.toHaveBeenCalled();
     expect(stdout.join("")).toBe('{"id":"123","status":"pending"}\n');
   });
 
   it("waits for the task and prints its result with --wait", async () => {
-    const api = apiWith();
+    const { api, flows } = apiWith();
 
     await runAsyncScrape(api, {
       body: BODY,
       options: { async: true, wait: true },
     });
 
-    expect(api.getStatus).toHaveBeenCalledWith("123");
-    expect(api.getResults).toHaveBeenCalledWith("123");
+    expect(flows.wait).toHaveBeenCalledWith("task", "123", expect.anything());
+    expect(flows.results).toHaveBeenCalledWith("task", "123");
     expect(stderr.join("")).toBe("task 123 started\n");
     expect(stdout.join("")).toBe('{"ok":true}\n');
   });
 
   it("fails without reading results when the task is faulted", async () => {
-    const api = apiWith({
-      getStatus: vi.fn().mockResolvedValue({ id: "123", status: "faulted" }),
-    });
+    const { api, flows } = apiWith("faulted");
 
     await expect(
       runAsyncScrape(api, { body: BODY, options: { async: true, wait: true } })
     ).rejects.toThrow(new TaskFailedError("123", "faulted"));
-    expect(api.getResults).not.toHaveBeenCalled();
+    expect(flows.results).not.toHaveBeenCalled();
   });
 });

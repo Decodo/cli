@@ -7,10 +7,6 @@ export interface DataActionContext<Options> {
   verbose: boolean;
 }
 
-export interface DataActionConfig {
-  apiKeyOnly?: boolean;
-}
-
 export type DataActionHandler<Options> = (
   context: DataActionContext<Options>
 ) => Promise<void>;

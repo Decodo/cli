@@ -19,30 +19,36 @@ describe("createTaskCommand", () => {
   let exitCode: number | undefined;
   let stdout: string[];
   let stderr: string[];
-  const api = {
-    getStatus: vi.fn(),
-    getResults: vi.fn(),
+  const flows = {
+    status: vi.fn(),
+    wait: vi.fn(),
+    hasFailed: vi.fn(),
+    describe: vi.fn(),
+    results: vi.fn(),
   };
 
   beforeEach(() => {
     exitCode = undefined;
     stdout = [];
     stderr = [];
-    for (const fn of Object.values(api)) {
+    for (const fn of Object.values(flows)) {
       fn.mockReset();
     }
-    api.getStatus.mockResolvedValue({ id: "123", status: "done" });
-    api.getResults.mockResolvedValue(RESULTS);
+    flows.status.mockResolvedValue({ id: "123", status: "done" });
+    flows.wait.mockResolvedValue({ id: "123", status: "done" });
+    flows.hasFailed.mockReturnValue(false);
+    flows.describe.mockReturnValue({ statusField: "status" });
+    flows.results.mockResolvedValue(RESULTS);
     Object.defineProperty(process.stdout, "isTTY", {
       value: false,
       configurable: true,
     });
     vi.mocked(resolveAuthToken).mockResolvedValue({
-      credential: { type: AUTH_TYPE.TOKEN, value: "dTpw" },
+      credential: { type: AUTH_TYPE.API_KEY, value: "key" },
       source: "flag",
     });
     vi.mocked(createDecodoClient).mockReturnValue({
-      webScrapingApi: api,
+      webScrapingApi: { flows },
     } as never);
     vi.spyOn(process, "exit").mockImplementation((code) => {
       exitCode = code as number;
@@ -65,26 +71,22 @@ describe("createTaskCommand", () => {
     vi.restoreAllMocks();
   });
 
-  it("prints the task status as JSON with a basic token", async () => {
+  it("prints the task status as JSON", async () => {
     await runDataCommand(createTaskCommand(), ["task", "status", "123"]);
 
-    expect(api.getStatus).toHaveBeenCalledWith("123");
+    expect(flows.status).toHaveBeenCalledWith("task", "123");
     expect(stdout.join("")).toBe('{"id":"123","status":"done"}\n');
   });
 
   it("prints the task result without checking the status", async () => {
     await runDataCommand(createTaskCommand(), ["task", "results", "123"]);
 
-    expect(api.getStatus).not.toHaveBeenCalled();
-    expect(api.getResults).toHaveBeenCalledWith("123");
+    expect(flows.wait).not.toHaveBeenCalled();
+    expect(flows.results).toHaveBeenCalledWith("task", "123");
     expect(stdout.join("")).toBe('{"ok":true}\n');
   });
 
   it("waits for the task before printing its result with --wait", async () => {
-    api.getStatus
-      .mockResolvedValueOnce({ id: "123", status: "pending" })
-      .mockResolvedValueOnce({ id: "123", status: "done" });
-
     await runDataCommand(createTaskCommand(), [
       "task",
       "results",
@@ -94,12 +96,15 @@ describe("createTaskCommand", () => {
       "1",
     ]);
 
-    expect(api.getStatus).toHaveBeenCalledTimes(2);
+    expect(flows.wait).toHaveBeenCalledWith("task", "123", {
+      pollInterval: 1000,
+      timeout: 600_000,
+    });
     expect(stdout.join("")).toBe('{"ok":true}\n');
   });
 
   it("exits 1 with a hint when the task has no results yet", async () => {
-    api.getResults.mockResolvedValue(null);
+    flows.results.mockResolvedValue(undefined);
 
     await expect(
       runDataCommand(createTaskCommand(), ["task", "results", "123"])
@@ -110,14 +115,29 @@ describe("createTaskCommand", () => {
   });
 
   it("exits 7 when the waited task is faulted", async () => {
-    api.getStatus.mockResolvedValue({ id: "123", status: "faulted" });
+    flows.wait.mockResolvedValue({ id: "123", status: "faulted" });
+    flows.hasFailed.mockReturnValue(true);
 
     await expect(
       runDataCommand(createTaskCommand(), ["task", "results", "123", "--wait"])
     ).rejects.toThrow("process.exit:7");
 
     expect(exitCode).toBe(7);
-    expect(api.getResults).not.toHaveBeenCalled();
+    expect(flows.results).not.toHaveBeenCalled();
+  });
+
+  it("exits 3 with a basic token", async () => {
+    vi.mocked(resolveAuthToken).mockResolvedValue({
+      credential: { type: AUTH_TYPE.TOKEN, value: "dTpw" },
+      source: "flag",
+    });
+
+    await expect(
+      runDataCommand(createTaskCommand(), ["task", "status", "123"])
+    ).rejects.toThrow("process.exit:3");
+
+    expect(exitCode).toBe(3);
+    expect(flows.status).not.toHaveBeenCalled();
   });
 
   it("exits 2 when --timeout is set without --wait", async () => {

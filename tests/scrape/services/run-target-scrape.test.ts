@@ -265,11 +265,13 @@ describe("createTargetAction", () => {
 
   it("creates a task instead of scraping when --async is set", async () => {
     const scrape = vi.fn();
-    const scrapeAsync = vi
-      .fn()
-      .mockResolvedValue({ id: "123", status: "pending" });
+    const start = vi.fn().mockResolvedValue({ id: "123", status: "pending" });
+    vi.mocked(resolveAuthToken).mockResolvedValue({
+      credential: { type: AUTH_TYPE.API_KEY, value: "key" },
+      source: "flag",
+    });
     vi.mocked(createDecodoClient).mockReturnValue({
-      webScrapingApi: { scrape, scrapeAsync },
+      webScrapingApi: { scrape, flows: { start } },
     } as never);
 
     const googleSearch = new Command("google-search")
@@ -288,13 +290,40 @@ describe("createTargetAction", () => {
     );
 
     expect(scrape).not.toHaveBeenCalled();
-    expect(scrapeAsync).toHaveBeenCalledWith({
+    expect(start).toHaveBeenCalledWith("task", {
       target: "google_search",
       query: "coffee",
       parse: true,
       markdown: false,
     });
     expect(stdout).toBe('{"id":"123","status":"pending"}\n');
+  });
+
+  it("exits 3 when --async is used with a basic token", async () => {
+    const start = vi.fn();
+    vi.mocked(createDecodoClient).mockReturnValue({
+      webScrapingApi: { flows: { start } },
+    } as never);
+
+    const googleSearch = new Command("google-search")
+      .argument("<input>")
+      .action(createTargetAction("google_search", BundledSchema.shared));
+    attachScrapeOutputOptions(googleSearch);
+    attachAsyncOptions(googleSearch);
+
+    const program = new Command()
+      .option("--token <token>")
+      .addCommand(googleSearch);
+
+    await expect(
+      program.parseAsync(
+        ["google-search", "coffee", "--async", "--token", "test-token"],
+        { from: "user" }
+      )
+    ).rejects.toThrow("process.exit:3");
+
+    expect(exitCode).toBe(3);
+    expect(start).not.toHaveBeenCalled();
   });
 
   it("exits with a usage error when --wait is set without --async", async () => {

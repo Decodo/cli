@@ -35,9 +35,10 @@ Command assembly is two-layered:
   `scrape`, `screenshot`, `targets` (list), `task` (with `task status|results`), plus one
   generated command per API target from `codegen-target-commands.ts`.
 - Every generated target command takes `--async`, which creates an async task through the
-  SDK instead of a real-time scrape (`scrape/services/run-async-scrape.ts`); `--wait` polls
-  the task and prints its result. The `task` commands run through
-  `cli/services/run-data-action.ts` with `apiKeyOnly: false`, so they accept a basic token too.
+  SDK's `task` flow instead of a real-time scrape (`scrape/services/run-async-scrape.ts`);
+  `--wait` polls the task and prints its result. Endpoints, statuses and the poll interval
+  come from the schema through `webScrapingApi.flows`. Like the `task` commands, which run
+  through `cli/services/run-data-action.ts`, `--async` requires an API key.
 - The Data API commands `search`, `map`, and `crawl` (with `crawl status|results|cancel`)
   live in their own modules and are registered directly in `cli/register.ts`. They don't
   use the schema; each runs through `cli/services/run-data-action.ts`, which requires an
