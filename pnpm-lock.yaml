@@ -13,8 +13,8 @@ importers:
   .:
     dependencies:
       '@decodo/sdk-ts':
-        specifier: ^2.6.1
-        version: 2.6.1
+        specifier: ^5.0.0
+        version: 5.0.0
       commander:
         specifier: ^14.0.0
         version: 14.0.3
@@ -135,8 +135,8 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@decodo/sdk-ts@2.6.1':
-    resolution: {integrity: sha512-+QmLAz+81ge44VRjAwXbsM6rrGBp/EfBO9/degbDl5YuBs4EkiSYlo3LHgadGoEJT0ENrfKSUkAW+ghOpvfccQ==}
+  '@decodo/sdk-ts@5.0.0':
+    resolution: {integrity: sha512-3m7nAA3IMW172zw8VuacU3yXpgAbYSGOCvY7IhhoDBAEiFzpNQtYgjPQBu8SbjUrm1llsLeR6b/IMJV6WN9DJg==}
     engines: {node: '>=18.0.0'}
 
   '@esbuild/aix-ppc64@0.28.1':
@@ -2125,7 +2125,7 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@decodo/sdk-ts@2.6.1':
+  '@decodo/sdk-ts@5.0.0':
     dependencies:
       zod: 4.4.3
 
